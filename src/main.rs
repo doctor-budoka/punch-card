@@ -6,6 +6,7 @@ use std::env::{var, args};
 
 const DEFAULT_TIME_MINS: u32 = 480;
 const BASE_DIR: &str = "~/.punch-card/";
+const DAILY_DIR: &str = "days/";
 const CONFIG_FILE: &str = "punch.cfg";
 
 enum SubCommand {
@@ -32,17 +33,7 @@ fn main() {
     let command_name: &String = &env_args[1];
     let command: SubCommand = SubCommand::from_string(command_name);
 
-    let base_dir_expanded: String = expand_path(BASE_DIR);
-    if !Path::new(&base_dir_expanded).exists() {
-        create_dir_all(base_dir_expanded).expect("Should be able to create directory!");
-    }
-    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
-    if !Path::new(&config_path).exists() {
-        let default_content: String = format!("DAY_IN_MINUTES={DEFAULT_TIME_MINS}\nTIME_BEHIND=0");
-        // let mut cfg_file = OpenOptions::new().create_new(true).write(true).open(config_path).expect("Couldn't create a new config file");
-        // cfg_file.write_all(default_content.as_bytes()).expect("Couldn't write to config file!");
-        write_file(&config_path, default_content);
-    }
+    setup();
 
     match command {
         SubCommand::In => punch_in(),
@@ -50,9 +41,27 @@ fn main() {
         SubCommand::Pause=> take_break(),
         SubCommand::Resume => resume(),
     }
-
-    // Continued program logic goes here...
 }
+
+fn setup() {
+    create_dir_if_not_exists(BASE_DIR);
+    let daily_dir: String = BASE_DIR.to_string() + &(DAILY_DIR.to_string());
+    create_dir_if_not_exists(&daily_dir);
+
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    if !Path::new(&config_path).exists() {
+        let default_content: String = format!("DAY_IN_MINUTES={DEFAULT_TIME_MINS}\nTIME_BEHIND=0");
+        write_file(&config_path, default_content);
+    }
+}
+
+fn create_dir_if_not_exists(path: &str)  {
+    let dir_expanded: String = expand_path(path);
+    if !Path::new(&dir_expanded).exists() {
+        let expect_msg: String = format!("Unable to create directory: '{path}'");
+        create_dir_all(dir_expanded).expect(&expect_msg);
+    }
+} 
 
 fn punch_in() {
     let now: DateTime<Utc> = Utc::now();
@@ -78,7 +87,9 @@ fn write_file(path: &str, contents: String) {
     if let Ok(mut file) = file_result {
         file.write_all(contents.as_bytes()).expect("Couldn't write to file!");
     }
-    panic!("Couldn't create file {path}");
+    else {
+        panic!("Couldn't create file {path}");
+    }
 }
 
 
