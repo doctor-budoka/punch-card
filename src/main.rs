@@ -9,6 +9,9 @@ const BASE_DIR: &str = "~/.punch-card/";
 const DAILY_DIR: &str = "days/";
 const CONFIG_FILE: &str = "punch.cfg";
 
+const DATE_FMT: &str = "%Y-%m-%d";
+const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S";
+
 enum SubCommand {
     In,
     Out,
@@ -65,8 +68,17 @@ fn create_dir_if_not_exists(path: &str)  {
 
 fn punch_in() {
     let now: DateTime<Utc> = Utc::now();
-    let now_string: String = now.format("%Y-%m-%d %H:%M:%S").to_string();
-    println!("Clocking in for the day at '{now_string}'");
+    let day_string: String = now.format(DATE_FMT).to_string();
+    let day_path: String = expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
+    if Path::new(&day_path).exists() {
+        println!("You've already clocked in for the day!");
+    }
+    else {
+        let now_string: String = now.format(DATETIME_FMT).to_string();
+        println!("Clocking in for the day at '{}'", &now_string);
+        let contents: String = format!("{now_string}=start");
+        write_file(&day_path, contents);
+    }
 }
 
 fn punch_out() {
