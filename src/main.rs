@@ -1,6 +1,7 @@
 use std::fs::{File, OpenOptions, create_dir_all,read_to_string};
 use std::io::Write;
 use std::path::Path;
+use chrono::TimeZone;
 use chrono::prelude::{DateTime, Utc};
 use std::env::{var, args};
 
@@ -68,8 +69,7 @@ fn create_dir_if_not_exists(path: &str)  {
 
 fn punch_in() {
     let now: DateTime<Utc> = Utc::now();
-    let day_string: String = now.format(DATE_FMT).to_string();
-    let day_path: String = expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
+    let day_path: String = get_day_file_path(&now);
     if Path::new(&day_path).exists() {
         println!("You've already clocked in for the day!");
     }
@@ -82,7 +82,21 @@ fn punch_in() {
 }
 
 fn punch_out() {
-    println!("Clocking out for the day");
+    let now: DateTime<Utc> = Utc::now();
+    let day_path: String = get_day_file_path(&now);
+    if let Ok(day_raw) = read_file(&day_path) {
+        let now_string: String = now.format(DATETIME_FMT).to_string();
+        println!("Clocking out for the day at '{}'", &now_string);
+        let time_string: String = day_raw.trim().lines().nth(0).expect("No data for today found!").to_string().replace("=start", "");
+        let start_time: DateTime<Utc> = Utc.datetime_from_str(&time_string, DATETIME_FMT)
+            .expect(&format!("Expected time in ISO format! Given: {}", time_string))
+            .with_timezone(&Utc);
+        let time_done_mins = (now - start_time).num_minutes();
+        println!("Time done: {}", time_done_mins);
+    }
+    else {
+        println!("Can't punch out: You haven't punched in for the day yet!");
+    }
 }
 
 fn take_break() {
@@ -91,6 +105,11 @@ fn take_break() {
 
 fn resume() {
     println!("Getting back to work")
+}
+
+fn get_day_file_path(now: &DateTime<Utc>) -> String {
+    let day_string: String = now.format(DATE_FMT).to_string();
+    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
 }
 
 fn write_file(path: &str, contents: String) {
