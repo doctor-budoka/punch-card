@@ -5,6 +5,9 @@ use chrono::TimeZone;
 use chrono::prelude::{DateTime, Utc};
 use std::env::{var, args};
 
+mod day;
+use day::{Day, Interval};
+
 const DEFAULT_TIME_MINS: u32 = 480;
 const BASE_DIR: &str = "~/.punch-card/";
 const DAILY_DIR: &str = "days/";
