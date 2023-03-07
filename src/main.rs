@@ -1,12 +1,10 @@
-use std::fs::{File, OpenOptions, create_dir_all,read_to_string};
-use std::io::Write;
+use std::env::args;
 use std::path::Path;
 use chrono::TimeZone;
 use chrono::prelude::{DateTime, Utc};
-use std::env::{var, args};
 
-mod day;
-use day::{Day, Interval};
+mod utils;
+use utils::{Config, write_config, read_config, create_dir_if_not_exists, expand_path, write_file, read_file};
 
 const DEFAULT_TIME_MINS: u32 = 480;
 const BASE_DIR: &str = "~/.punch-card/";
@@ -15,6 +13,8 @@ const CONFIG_FILE: &str = "punch.cfg";
 
 const DATE_FMT: &str = "%Y-%m-%d";
 const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S";
+
+
 
 enum SubCommand {
     In,
@@ -57,18 +57,10 @@ fn setup() {
 
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
     if !Path::new(&config_path).exists() {
-        let default_content: String = format!("DAY_IN_MINUTES={DEFAULT_TIME_MINS}\nTIME_BEHIND=0");
-        write_file(&config_path, default_content);
+        let default_config: Config = Config::new(DEFAULT_TIME_MINS, 0);
+        write_config(&config_path, &default_config);
     }
 }
-
-fn create_dir_if_not_exists(path: &str)  {
-    let dir_expanded: String = expand_path(path);
-    if !Path::new(&dir_expanded).exists() {
-        let expect_msg: String = format!("Unable to create directory: '{path}'");
-        create_dir_all(dir_expanded).expect(&expect_msg);
-    }
-} 
 
 fn punch_in() {
     let now: DateTime<Utc> = Utc::now();
@@ -114,27 +106,3 @@ fn get_day_file_path(now: &DateTime<Utc>) -> String {
     let day_string: String = now.format(DATE_FMT).to_string();
     return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
 }
-
-fn write_file(path: &str, contents: String) {
-    let path_to_write: String = expand_path(path);
-    let file_result: Result<File, std::io::Error> = OpenOptions::new().create_new(true).write(true).open(path_to_write);
-    if let Ok(mut file) = file_result {
-        file.write_all(contents.as_bytes()).expect("Couldn't write to file!");
-    }
-    else {
-        panic!("Couldn't create file {path}");
-    }
-}
-
-
-fn read_file(path: &str) -> Result<String,std::io::Error> {
-    let path_to_read = expand_path(path);
-    return read_to_string(path_to_read);
-}
-
-fn expand_path(path: &str) -> String {
-    return if path.starts_with("~/") {
-        var("HOME").unwrap() + &path[1..]
-    }else {path.to_string()};
-}
-
