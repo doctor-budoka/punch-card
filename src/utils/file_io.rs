@@ -5,7 +5,7 @@ use std::env::var;
 
 pub fn write_file(path: &str, contents: String) {
     let path_to_write: String = expand_path(path);
-    let file_result: Result<File, std::io::Error> = OpenOptions::new().create_new(true).write(true).open(path_to_write);
+    let file_result: Result<File, std::io::Error> = OpenOptions::new().write(true).open(path_to_write);
     if let Ok(mut file) = file_result {
         file.write_all(contents.as_bytes()).expect("Couldn't write to file!");
     }

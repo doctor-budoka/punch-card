@@ -1,10 +1,9 @@
 use std::env::args;
 use std::path::Path;
-use chrono::TimeZone;
 use chrono::prelude::{DateTime, Utc};
 
 mod utils;
-use utils::{Config, write_config, read_config, create_dir_if_not_exists, expand_path, write_file, read_file};
+use utils::{Config, write_config, create_dir_if_not_exists, expand_path, Day, write_day, read_day};
 
 const DEFAULT_TIME_MINS: u32 = 480;
 const BASE_DIR: &str = "~/.punch-card/";
@@ -12,8 +11,6 @@ const DAILY_DIR: &str = "days/";
 const CONFIG_FILE: &str = "punch.cfg";
 
 const DATE_FMT: &str = "%Y-%m-%d";
-const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S";
-
 
 
 enum SubCommand {
@@ -69,25 +66,26 @@ fn punch_in() {
         println!("You've already clocked in for the day!");
     }
     else {
-        let now_string: String = now.format(DATETIME_FMT).to_string();
-        println!("Clocking in for the day at '{}'", &now_string);
-        let contents: String = format!("{now_string}=start");
-        write_file(&day_path, contents);
+        let new_day: Day = Day::new(&now);
+        println!("Clocking in for the day at '{}'", &new_day.get_day_start_as_str());
+        write_day(&day_path, &new_day);
     }
 }
 
 fn punch_out() {
     let now: DateTime<Utc> = Utc::now();
     let day_path: String = get_day_file_path(&now);
-    if let Ok(day_raw) = read_file(&day_path) {
-        let now_string: String = now.format(DATETIME_FMT).to_string();
-        println!("Clocking out for the day at '{}'", &now_string);
-        let time_string: String = day_raw.trim().lines().nth(0).expect("No data for today found!").to_string().replace("=start", "");
-        let start_time: DateTime<Utc> = Utc.datetime_from_str(&time_string, DATETIME_FMT)
-            .expect(&format!("Expected time in ISO format! Given: {}", time_string))
-            .with_timezone(&Utc);
-        let time_done_mins = (now - start_time).num_minutes();
-        println!("Time done: {}", time_done_mins);
+    if let Ok(mut day) = read_day(&day_path) {
+        if let Ok(_) = day.end_day_at(&now) {
+            println!("Clocking out for the day at '{}'", &day.get_day_end_as_str().unwrap());
+            let start_time: DateTime<Utc> = day.get_day_start().as_dt();
+            let time_done_mins = (now - start_time).num_minutes();
+            println!("Time done: {}", time_done_mins);
+            write_day(&day_path, &day);
+        }
+        else {
+            println!("Can't punch out: Already punched out for the day!")
+        }
     }
     else {
         println!("Can't punch out: You haven't punched in for the day yet!");
