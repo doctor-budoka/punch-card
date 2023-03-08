@@ -40,7 +40,7 @@ impl DtUtc {
     }
 
     pub fn as_string(&self) -> String {
-        return serde_yaml::to_string(&self).unwrap();
+        return serde_yaml::to_string(&self).unwrap().trim().to_string();
     }
 
     pub fn from_string(yaml_str: &String) -> Self {
@@ -130,6 +130,13 @@ impl Interval {
     pub fn from_string(yaml_str: &String) -> Self {
         return serde_yaml::from_str(yaml_str).unwrap();
     }
+
+    pub fn get_length(&self) -> Option<i64> {
+        return match self.get_end() {
+            Some(end_time) => Some((end_time.0 - self.start.0).num_minutes()),
+            None => None, 
+        }
+    }
 }
 
 #[derive(Debug,Serialize,Deserialize)]
@@ -156,7 +163,9 @@ impl Day {
         }
         else {
             self.overall_interval.end_at(at);
-            self.on_break = false;
+            if self.on_break {
+                return self.end_current_break_at(at);
+            }
             return Ok(());
         }
     }
@@ -223,6 +232,24 @@ impl Day {
 
     pub fn from_string(yaml_str: &String) -> Self {
         return serde_yaml::from_str(yaml_str).unwrap();
+    }
+
+    pub fn get_day_length(&self) -> Option<i64> {
+        return self.overall_interval.get_length() 
+    }
+
+    pub fn get_total_break_time(&self) -> Option<i64> {
+        return match self.on_break {
+            true => None,
+            false => self.breaks.iter().map(|x| x.get_length()).sum(),
+        };
+    }
+
+    pub fn get_time_done(&self) -> Option<i64> {
+        return match (self.get_day_length(), self.get_total_break_time()) {
+            (Some(day), Some(breaks)) => Some(day - breaks),
+            (_, _) => None,
+        };
     }
 }
 

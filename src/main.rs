@@ -3,9 +3,9 @@ use std::path::Path;
 use chrono::prelude::{DateTime, Utc};
 
 mod utils;
-use utils::{Config, write_config, create_dir_if_not_exists, expand_path, Day, write_day, read_day};
+use utils::{Config, write_config, create_dir_if_not_exists, expand_path, Day, write_day, read_day, read_config};
 
-const DEFAULT_TIME_MINS: u32 = 480;
+const DEFAULT_TIME_MINS: i64 = 480;
 const BASE_DIR: &str = "~/.punch-card/";
 const DAILY_DIR: &str = "days/";
 const CONFIG_FILE: &str = "punch.cfg";
@@ -62,7 +62,7 @@ fn setup() {
 fn punch_in() {
     let now: DateTime<Utc> = Utc::now();
     let day_path: String = get_day_file_path(&now);
-    if Path::new(&day_path).exists() {
+    if let Ok(_) = read_day(&day_path) {
         println!("You've already clocked in for the day!");
     }
     else {
@@ -77,10 +77,8 @@ fn punch_out() {
     let day_path: String = get_day_file_path(&now);
     if let Ok(mut day) = read_day(&day_path) {
         if let Ok(_) = day.end_day_at(&now) {
-            println!("Clocking out for the day at '{}'", &day.get_day_end_as_str().unwrap());
-            let start_time: DateTime<Utc> = day.get_day_start().as_dt();
-            let time_done_mins = (now - start_time).num_minutes();
-            println!("Time done: {}", time_done_mins);
+            println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
+            println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
             write_day(&day_path, &day);
         }
         else {
@@ -93,11 +91,58 @@ fn punch_out() {
 }
 
 fn take_break() {
-    println!("Taking a break")
+    let now: DateTime<Utc> = Utc::now();
+    let day_path: String = get_day_file_path(&now);
+    if let Ok(mut day) = read_day(&day_path) {
+        if let Ok(_) = day.start_break(&now) {
+            println!("Taking a break at '{}'", &now);
+            write_day(&day_path, &day);
+
+            day.end_day_at(&now);
+            let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
+            println!("Time done: {}", time_so_far);
+            println!("Time left: {}", get_time_left(time_so_far));
+        }
+        else {
+            println!("Can't take a break: Already on a break!")
+        }
+    }
+    else {
+        println!("Can't take a break: You haven't punched in for the day yet!");
+    }
 }
 
 fn resume() {
-    println!("Getting back to work")
+    let now: DateTime<Utc> = Utc::now();
+    let day_path: String = get_day_file_path(&now);
+    if let Ok(mut day) = read_day(&day_path) {
+        if let Ok(_) = day.end_current_break_at(&now) {
+            println!("Back to work at '{}'", &now);
+            write_day(&day_path, &day);
+
+            day.end_day_at(&now);
+            let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
+            println!("Time done today: {}", time_so_far);
+            println!("Time left today: {}", get_time_left(time_so_far));
+        }
+        else {
+            println!("Can't end the break: Not on a break!")
+        }
+    }
+    else {
+        println!("Can't end the break: You haven't even punched in for the day yet!");
+    }
+}
+
+fn summarise() {
+
+}
+
+
+fn get_time_left(minutes_done: i64) -> i64 {
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    let config: Config = read_config(&config_path);
+    return config.day_in_minutes() - minutes_done;
 }
 
 fn get_day_file_path(now: &DateTime<Utc>) -> String {

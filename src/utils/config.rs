@@ -3,12 +3,12 @@ use crate::utils::file_io::{write_file,read_file};
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Config {
-    day_in_minutes: u32,
-    minutes_behind: u32,
+    day_in_minutes: i64,
+    minutes_behind: i64,
 }
 
 impl Config {
-    pub fn new(day_length: u32, minutes_behind: u32) -> Self {
+    pub fn new(day_length: i64, minutes_behind: i64) -> Self {
         return Self {
             day_in_minutes: day_length, 
             minutes_behind: minutes_behind
@@ -21,6 +21,14 @@ impl Config {
 
     pub fn from_string(yaml_str: &String) -> Self {
         return serde_yaml::from_str(yaml_str).unwrap();
+    }
+
+    pub fn day_in_minutes(&self) -> i64 {
+        return self.day_in_minutes;
+    }
+
+    pub fn minutes_behind(&self) -> i64 {
+        return self.minutes_behind;
     }
 }
 
