@@ -1,5 +1,4 @@
 use std::fmt;
-use std::io;
 use chrono::prelude::{DateTime, Utc};
 use chrono::TimeZone;
 use serde::de;
@@ -26,7 +25,7 @@ impl<'de> Visitor<'de> for DtUtcVisitor {
     {
         return match Utc.datetime_from_str(&s, DATETIME_FMT) {
             Ok(time) => Ok(DtUtc::new(time.with_timezone(&Utc))),
-            Err(err) => Err(E::custom("Incorrect format for string")),
+            Err(_) => Err(E::custom("Incorrect format for string")),
         }
     }
 }
@@ -43,10 +42,12 @@ impl DtUtc {
         return serde_yaml::to_string(&self).unwrap().trim().to_string();
     }
 
+    #[allow(dead_code)]
     pub fn from_string(yaml_str: &String) -> Self {
         return serde_yaml::from_str(yaml_str).unwrap();
     }
 
+    #[allow(dead_code)]
     pub fn as_dt(&self) -> DateTime<Utc> {
         return self.0;
     }
@@ -108,6 +109,7 @@ impl Interval {
         return self.start;
     }
 
+    #[allow(dead_code)]
     pub fn get_start_as_str(&self) -> String {
         return self.get_start().as_string();
     }
@@ -123,10 +125,12 @@ impl Interval {
         };
     }
 
+    #[allow(dead_code)]
     pub fn as_string(&self) -> String {
         return serde_yaml::to_string(&self).unwrap();
     }
 
+    #[allow(dead_code)]
     pub fn from_string(yaml_str: &String) -> Self {
         return serde_yaml::from_str(yaml_str).unwrap();
     }
@@ -176,6 +180,10 @@ impl Day {
         return self.end_day_at(&now);
     }
 
+    pub fn has_ended(&self) -> bool {
+        return self.overall_interval.has_end();
+    }
+
     pub fn start_break(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
         if self.on_break {
             return Err("Can't start a break because day is already on break");
@@ -218,6 +226,7 @@ impl Day {
         return self.get_day_start().as_string();
     }
 
+    #[allow(dead_code)]
     pub fn get_day_end(&self) -> Option<DtUtc> {
         return self.overall_interval.get_end();
     }
@@ -254,12 +263,14 @@ impl Day {
 }
 
 
+#[allow(dead_code)]
 pub fn string_as_time(time_str: &String) -> DateTime<Utc> {
     let start_time: DateTime<Utc> = Utc.datetime_from_str(&time_str, DATETIME_FMT)
     .expect(&format!("Expected time in ISO format! Given: {}", time_str))
     .with_timezone(&Utc);
     return start_time;
 }
+
 
 pub fn write_day(path: &str, day: &Day) {
     write_file(path, day.as_string());

@@ -18,6 +18,7 @@ enum SubCommand {
     Out,
     Pause,
     Resume,
+    Summary,
 }
 
 impl SubCommand {
@@ -27,6 +28,7 @@ impl SubCommand {
             "out" => Self::Out,
             "pause" => Self::Pause,
             "resume" => Self::Resume,
+            "summary" => Self::Summary,
             other => panic!("{other} is not a valid subcommand!"),
         }
     }
@@ -44,6 +46,7 @@ fn main() {
         SubCommand::Out => punch_out(),
         SubCommand::Pause=> take_break(),
         SubCommand::Resume => resume(),
+        SubCommand::Summary => summary(),
     }
 }
 
@@ -80,6 +83,7 @@ fn punch_out() {
             println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
             println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
             write_day(&day_path, &day);
+            update_time_behind(day)
         }
         else {
             println!("Can't punch out: Already punched out for the day!")
@@ -97,11 +101,8 @@ fn take_break() {
         if let Ok(_) = day.start_break(&now) {
             println!("Taking a break at '{}'", &now);
             write_day(&day_path, &day);
-
-            day.end_day_at(&now);
-            let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
-            println!("Time done: {}", time_so_far);
-            println!("Time left: {}", get_time_left(time_so_far));
+            day.end_day_at(&now).expect("We should be able to end the day");
+            summarise_time(&day);
         }
         else {
             println!("Can't take a break: Already on a break!")
@@ -119,11 +120,8 @@ fn resume() {
         if let Ok(_) = day.end_current_break_at(&now) {
             println!("Back to work at '{}'", &now);
             write_day(&day_path, &day);
-
-            day.end_day_at(&now);
-            let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
-            println!("Time done today: {}", time_so_far);
-            println!("Time left today: {}", get_time_left(time_so_far));
+            day.end_day_at(&now).expect("We should be able to end the day");
+            summarise_time(&day);
         }
         else {
             println!("Can't end the break: Not on a break!")
@@ -134,16 +132,77 @@ fn resume() {
     }
 }
 
-fn summarise() {
 
+fn summary() {
+    let now: DateTime<Utc> = Utc::now();
+    let day_path: String = get_day_file_path(&now);
+    if let Ok(mut day) = read_day(&day_path) {
+        day.end_day_at(&now).expect("We should be able to end the day");
+        summarise_time(&day);
+    }
+    else {
+        println!("Can't summarise the day because you haven't punched in for the day yet!");
+    }
 }
 
 
-fn get_time_left(minutes_done: i64) -> i64 {
+fn summarise_time(day: &Day) {
+    let time_so_far: i64 = day.get_time_done().expect("Day is over so we should be able to calculate time done!");
+    let mut config: Config = get_config();
+    let time_left: i64 = config.day_in_minutes() - time_so_far;
+    config.update_minutes_behind(time_left);
+
+    println!("Time done today: {}", time_so_far);
+    println!("Time left today: {}", time_left);
+    println!("Minutes behind overall: {}", config.minutes_behind());
+    println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
+}
+
+
+fn update_time_behind(day: Day) {
+    if day.has_ended() {
+        let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
+        let mut config: Config = get_config();
+        let time_left: i64 = config.day_in_minutes() - time_so_far;
+        config.update_minutes_behind(time_left);
+
+        println!("Time done today: {}", time_so_far);
+        println!("Time left today: {}", time_left);
+        println!("Minutes behind overall: {}", config.minutes_behind());
+        println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
+        update_config(config);
+    }
+    else {
+        panic!("Can't update time behind: The day isn't over yet")
+    }
+}
+
+
+#[allow(dead_code)]
+fn get_current_day() -> Result<Day, String> {
+    let now: DateTime<Utc> = Utc::now();
+    let day_path: String = get_day_file_path(&now);
+    if let Ok(day) = read_day(&day_path) {
+        return Ok(day);
+    }
+    else {
+        return Err("Can't get current day. Have you punched in?".to_string());
+    }
+}
+
+
+fn get_config() -> Config {
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
     let config: Config = read_config(&config_path);
-    return config.day_in_minutes() - minutes_done;
+    return config;
 }
+
+
+fn update_config(config: Config) {
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    write_config(&config_path, &config)
+}
+
 
 fn get_day_file_path(now: &DateTime<Utc>) -> String {
     let day_string: String = now.format(DATE_FMT).to_string();
