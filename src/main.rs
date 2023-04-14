@@ -1,9 +1,8 @@
 use std::env::args;
 use chrono::prelude::{DateTime, Utc};
-use chrono::Duration;
 
 mod utils;
-use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Config, create_default_config_if_not_exists, get_config, update_config, Day, write_day, read_day};
+use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Config, create_default_config_if_not_exists, get_config, update_config, Day, write_day, read_day, get_current_day};
 
 enum SubCommand {
     In,
@@ -155,19 +154,5 @@ fn update_time_behind(day: Day) {
     }
     else {
         panic!("Can't update time behind: The day isn't over yet")
-    }
-}
-
-
-fn get_current_day(now: &DateTime<Utc>) -> Result<Day, String> {
-    let yesterday: DateTime<Utc> = *now - Duration::days(1);
-    if let Ok(day) = read_day(&now) {
-        return Ok(day);
-    }
-    else if let Ok(day) = read_day(&yesterday) {
-        return Ok(day);
-    }
-    else {
-        return Err("Can't get current day. Have you punched in?".to_string());
     }
 }

@@ -1,6 +1,7 @@
 use std::fmt;
 use chrono::prelude::{DateTime, Utc};
 use chrono::TimeZone;
+use chrono::Duration;
 use serde::de;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
@@ -293,6 +294,19 @@ pub fn read_day(now: &DateTime<Utc>) -> Result<Day, std::io::Error> {
         Ok(string) => Ok(Day::from_string(&string)),
         Err(err) => Err(err),
     };
+}
+
+pub fn get_current_day(now: &DateTime<Utc>) -> Result<Day, String> {
+    let yesterday: DateTime<Utc> = *now - Duration::days(1);
+    if let Ok(day) = read_day(&now) {
+        return Ok(day);
+    }
+    else if let Ok(day) = read_day(&yesterday) {
+        return Ok(day);
+    }
+    else {
+        return Err("Can't get current day. Have you punched in?".to_string());
+    }
 }
 
 pub fn create_daily_dir_if_not_exists() {
