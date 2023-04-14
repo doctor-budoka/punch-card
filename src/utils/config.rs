@@ -1,5 +1,9 @@
 use serde::{Serialize,Deserialize};
-use crate::utils::file_io::{write_file,read_file};
+use std::path::Path;
+use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR};
+
+pub const CONFIG_FILE: &str = "punch.cfg";
+const DEFAULT_TIME_MINS: i64 = 480;
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Config {
@@ -53,4 +57,25 @@ pub fn write_config(path: &String, config: &Config) {
 pub fn read_config(path: &String) -> Config {
     let yaml_str = read_file(path).unwrap();
     return Config::from_string(&yaml_str);
+}
+
+pub fn create_default_config_if_not_exists() {
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    if !Path::new(&config_path).exists() {
+        let default_config: Config = Config::new(DEFAULT_TIME_MINS, 0);
+        write_config(&config_path, &default_config);
+    }
+}
+
+
+pub fn get_config() -> Config {
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    let config: Config = read_config(&config_path);
+    return config;
+}
+
+
+pub fn update_config(config: Config) {
+    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    write_config(&config_path, &config)
 }

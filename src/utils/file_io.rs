@@ -3,6 +3,8 @@ use std::io::Write;
 use std::path::Path;
 use std::env::var;
 
+pub const BASE_DIR: &str = "~/.punch-card/";
+
 pub fn write_file(path: &str, contents: String) {
     let path_to_write: String = expand_path(path);
     let file_result: Result<File, std::io::Error> = OpenOptions::new().create(true).write(true).open(path_to_write);
@@ -26,6 +28,10 @@ pub fn create_dir_if_not_exists(path: &str)  {
         create_dir_all(dir_expanded).expect(&expect_msg);
     }
 } 
+
+pub fn create_base_dir_if_not_exists() {
+    create_dir_if_not_exists(&BASE_DIR)
+}
 
 pub fn expand_path(path: &str) -> String {
     return if path.starts_with("~/") {
