@@ -5,9 +5,11 @@ use serde::de;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
 
-use crate::utils::file_io::{write_file,read_file};
+use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR,create_dir_if_not_exists};
 
+pub const DAILY_DIR: &str = "days/";
 const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S";
+const DATE_FMT: &str = "%Y-%m-%d";
 
 
 struct DtUtcVisitor;
@@ -272,15 +274,28 @@ pub fn string_as_time(time_str: &String) -> DateTime<Utc> {
 }
 
 
-pub fn write_day(path: &str, day: &Day) {
+pub fn get_day_file_path(now: &DateTime<Utc>) -> String {
+    let day_string: String = now.format(DATE_FMT).to_string();
+    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
+}
+
+
+pub fn write_day(day: &Day) {
+    let path = &get_day_file_path(&day.get_day_start().as_dt());
     write_file(path, day.as_string());
 }
 
 
-pub fn read_day(path: &String) -> Result<Day, std::io::Error> {
+pub fn read_day(now: &DateTime<Utc>) -> Result<Day, std::io::Error> {
+    let path = &get_day_file_path(&now);
     let read_result = read_file(path);
     return match read_result {
         Ok(string) => Ok(Day::from_string(&string)),
         Err(err) => Err(err),
     };
+}
+
+pub fn create_daily_dir_if_not_exists() {
+    let daily_dir: String = BASE_DIR.to_string() + &(DAILY_DIR.to_string());
+    create_dir_if_not_exists(&daily_dir);
 }
