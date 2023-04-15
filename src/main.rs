@@ -117,7 +117,11 @@ fn resume() {
 fn summary() {
     let now: DateTime<Utc> = Utc::now();
     if let Ok(mut day) = get_current_day(&now) {
-        day.end_day_at(&now).expect("We should be able to end the day");
+        let end_result = day.end_day_at(&now);
+        match end_result {
+            Ok(_) => (),
+            _ => (),
+        }
         summarise_time(&day);
     }
     else {
