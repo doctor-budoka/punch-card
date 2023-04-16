@@ -10,6 +10,7 @@ enum SubCommand {
     Pause,
     Resume,
     Summary,
+    View,
 }
 
 impl SubCommand {
@@ -20,6 +21,7 @@ impl SubCommand {
             "pause" => Self::Pause,
             "resume" => Self::Resume,
             "summary" => Self::Summary,
+            "view" => Self::View,
             other => panic!("{other} is not a valid subcommand!"),
         }
     }
@@ -38,6 +40,7 @@ fn main() {
         SubCommand::Pause=> take_break(),
         SubCommand::Resume => resume(),
         SubCommand::Summary => summary(),
+        SubCommand::View => view_day(),
     }
 }
 
@@ -110,6 +113,17 @@ fn resume() {
     }
     else {
         println!("Can't end the break: You haven't even punched in for the day yet!");
+    }
+}
+
+fn view_day() {
+    let now: DateTime<Utc> = Utc::now();
+    if let Ok(day) = get_current_day(&now) {
+        println!("Here's the day so far: \n");
+        println!("{}", day.as_string());
+    }
+    else {
+        println!("Can't view today: You haven't even punched in for the day yet!");
     }
 }
 
