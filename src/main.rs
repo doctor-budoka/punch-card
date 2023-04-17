@@ -4,6 +4,7 @@ use chrono::prelude::{DateTime, Utc};
 mod utils;
 use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Config, create_default_config_if_not_exists, get_config, update_config, Day, write_day, read_day, get_current_day};
 
+#[derive(PartialEq)]
 enum SubCommand {
     In,
     Out,
@@ -11,6 +12,7 @@ enum SubCommand {
     Resume,
     Summary,
     View,
+    Edit,
 }
 
 impl SubCommand {
@@ -22,9 +24,11 @@ impl SubCommand {
             "resume" => Self::Resume,
             "summary" => Self::Summary,
             "view" => Self::View,
+            "edit" => Self::Edit,
             other => panic!("{other} is not a valid subcommand!"),
         }
     }
+
 }
 
 fn main() {
@@ -34,14 +38,8 @@ fn main() {
 
     setup();
 
-    match command {
-        SubCommand::In => punch_in(),
-        SubCommand::Out => punch_out(),
-        SubCommand::Pause=> take_break(),
-        SubCommand::Resume => resume(),
-        SubCommand::Summary => summary(),
-        SubCommand::View => view_day(),
-    }
+    let now: DateTime<Utc> = Utc::now();
+    run_command(command, now);
 }
 
 fn setup() {
@@ -50,9 +48,32 @@ fn setup() {
     create_default_config_if_not_exists();
 }
 
-fn punch_in() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(_) = read_day(&now) {
+fn run_command(command: SubCommand, now: DateTime<Utc>) {
+    if command == SubCommand::In {
+        punch_in(&now);
+    }
+    else {
+        let possible_day: Result<Day, String> = get_current_day(&now);
+        if let Err(msg) = possible_day {
+            println!("{}", msg);
+            return
+        }
+        let day: Day = possible_day.unwrap();
+
+        match command {
+            SubCommand::Out => punch_out(&now, day),
+            SubCommand::Pause=> take_break(&now, day),
+            SubCommand::Resume => resume(&now, day),
+            SubCommand::Summary => summary(&now, day),
+            SubCommand::View => view_day(day),
+            SubCommand::Edit => edit_day(day),
+            SubCommand::In => unreachable!("We shouldn't be processing punch in here"),
+        }
+    }
+}
+
+fn punch_in(now: &DateTime<Utc>) {
+    if let Ok(_) = read_day(now) {
         println!("You've already clocked in for the day!");
     }
     else {
@@ -62,85 +83,69 @@ fn punch_in() {
     }
 }
 
-fn punch_out() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(mut day) = get_current_day(&now) {
-        if let Ok(_) = day.end_day_at(&now) {
-            println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
-            println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
-            write_day(&day);
-            update_time_behind(day)
-        }
-        else {
-            println!("Can't punch out: Already punched out for the day!")
-        }
+fn punch_out(now: &DateTime<Utc>, mut day: Day) {
+    if let Ok(_) = day.end_day_at(&now) {
+        println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
+        println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
+        write_day(&day);
+        update_time_behind(day)
     }
     else {
-        println!("Can't punch out: You haven't punched in for the day yet!");
+        println!("Can't punch out: Already punched out for the day!")
     }
 }
 
-fn take_break() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(mut day) = get_current_day(&now) {
-        if let Ok(_) = day.start_break(&now) {
-            println!("Taking a break at '{}'", &now);
-            write_day(&day);
-            day.end_day_at(&now).expect("We should be able to end the day");
-            summarise_time(&day);
-        }
-        else {
-            println!("Can't take a break: Already on a break!")
-        }
-    }
-    else {
-        println!("Can't take a break: You haven't punched in for the day yet!");
-    }
-}
-
-fn resume() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(mut day) = get_current_day(&now) {
-        if let Ok(_) = day.end_current_break_at(&now) {
-            println!("Back to work at '{}'", &now);
-            write_day(&day);
-            day.end_day_at(&now).expect("We should be able to end the day");
-            summarise_time(&day);
-        }
-        else {
-            println!("Can't end the break: Not on a break!")
-        }
-    }
-    else {
-        println!("Can't end the break: You haven't even punched in for the day yet!");
-    }
-}
-
-fn view_day() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(day) = get_current_day(&now) {
-        println!("Here's the day so far: \n");
-        println!("{}", day.as_string());
-    }
-    else {
-        println!("Can't view today: You haven't even punched in for the day yet!");
-    }
-}
-
-
-fn summary() {
-    let now: DateTime<Utc> = Utc::now();
-    if let Ok(mut day) = get_current_day(&now) {
-        let end_result = day.end_day_at(&now);
-        match end_result {
-            Ok(_) => (),
-            _ => (),
-        }
+fn take_break(now: &DateTime<Utc>, mut day: Day) {
+    if let Ok(_) = day.start_break(&now) {
+        println!("Taking a break at '{}'", &now);
+        write_day(&day);
+        day.end_day_at(&now).expect("We should be able to end the day");
         summarise_time(&day);
     }
     else {
-        println!("Can't summarise the day because you haven't punched in for the day yet!");
+        print!("Can't take a break: Already on a break!")
     }
+}
+
+fn resume(now: &DateTime<Utc>, mut day: Day) {
+    if let Ok(_) = day.end_current_break_at(&now) {
+        println!("Back to work at '{}'", &now);
+        write_day(&day);
+        day.end_day_at(&now).expect("We should be able to end the day");
+        summarise_time(&day);
+    }
+    else {
+        println!("Can't end the break: Not on a break!")
+    }
+}
+
+fn view_day(day: Day) {
+    println!("Here's the day so far: \n");
+    println!("{}", day.as_string());
+}
+
+fn edit_day(day: Day) {
+    let path: String = day.get_day_path();
+    println!("Opening day in vim...");
+    {
+        std::process::Command::new("vim")
+        .arg(path)
+        .spawn()
+        .expect("Error: Failed to run editor")
+        .wait()
+        .expect("Error: Editor returned a non-zero status");
+    }
+    println!("Vim closed.");
+}
+
+
+fn summary(now: &DateTime<Utc>, mut day: Day) {
+    let end_result = day.end_day_at(&now);
+    match end_result {
+        Ok(_) => (),
+        _ => (),
+    }
+    summarise_time(&day);
 }
 
 

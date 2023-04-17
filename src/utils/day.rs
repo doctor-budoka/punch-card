@@ -263,6 +263,10 @@ impl Day {
             (_, _) => None,
         };
     }
+
+    pub fn get_day_path(&self) -> String {
+        return get_day_file_path(&self.get_day_start().as_dt());
+    }
 }
 
 
