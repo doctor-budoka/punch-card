@@ -1,5 +1,4 @@
 use std::env::args;
-use std::process::exit;
 use chrono::prelude::{DateTime, Utc};
 
 mod utils;
@@ -76,7 +75,6 @@ fn run_command(command: SubCommand, now: DateTime<Utc>) {
 fn punch_in(now: &DateTime<Utc>) {
     if let Ok(_) = read_day(now) {
         println!("You've already clocked in for the day!");
-        exit(1);
     }
     else {
         let new_day: Day = Day::new(&now);
