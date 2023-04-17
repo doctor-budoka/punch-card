@@ -11,6 +11,7 @@ enum SubCommand {
     Resume,
     Summary,
     View,
+    Edit,
 }
 
 impl SubCommand {
@@ -22,6 +23,7 @@ impl SubCommand {
             "resume" => Self::Resume,
             "summary" => Self::Summary,
             "view" => Self::View,
+            "edit" => Self::Edit,
             other => panic!("{other} is not a valid subcommand!"),
         }
     }
@@ -41,6 +43,7 @@ fn main() {
         SubCommand::Resume => resume(),
         SubCommand::Summary => summary(),
         SubCommand::View => view_day(),
+        SubCommand::Edit => edit_day(),
     }
 }
 
@@ -124,6 +127,26 @@ fn view_day() {
     }
     else {
         println!("Can't view today: You haven't even punched in for the day yet!");
+    }
+}
+
+fn edit_day() {
+    let now: DateTime<Utc> = Utc::now();
+    if let Ok(day) = get_current_day(&now) {
+        let path: String = day.get_day_path();
+        println!("Opening day in vim...");
+        {
+            std::process::Command::new("vim")
+            .arg(path)
+            .spawn()
+            .expect("Error: Failed to run editor")
+            .wait()
+            .expect("Error: Editor returned a non-zero status");
+        }
+        println!("Vim closed.");
+    }
+    else {
+        println!("Can't edit today: You haven't even punched in for the day yet!");
     }
 }
 
