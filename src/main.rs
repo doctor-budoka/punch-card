@@ -176,6 +176,6 @@ fn update_time_behind(day: Day) {
         update_config(config);
     }
     else {
-        println!("Can't update time behind: The day isn't over yet")
+        panic!("Can't update time behind: The day isn't over yet")
     }
 }
