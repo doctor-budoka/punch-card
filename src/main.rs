@@ -96,26 +96,30 @@ fn punch_out(now: &DateTime<Utc>, mut day: Day) {
 }
 
 fn take_break(now: &DateTime<Utc>, mut day: Day) {
-    if let Ok(_) = day.start_break(&now) {
+    let break_result = day.start_break(&now);
+    if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
         write_day(&day);
-        day.end_day_at(&now).expect("We should be able to end the day");
+        if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
         summarise_time(&day);
     }
     else {
-        print!("Can't take a break: Already on a break!")
+        let msg = break_result.unwrap_err();
+        println!("{}", msg);
     }
 }
 
 fn resume(now: &DateTime<Utc>, mut day: Day) {
-    if let Ok(_) = day.end_current_break_at(&now) {
+    let resume_result = day.end_current_break_at(&now);
+    if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
         write_day(&day);
-        day.end_day_at(&now).expect("We should be able to end the day");
+        if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
         summarise_time(&day);
     }
     else {
-        println!("Can't end the break: Not on a break!")
+        let msg = resume_result.unwrap_err();
+        println!("{}", msg);
     }
 }
 
