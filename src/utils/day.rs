@@ -188,6 +188,10 @@ impl Day {
     }
 
     pub fn start_break(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
+        if self.has_ended() {
+            return Err("Can't start a break because day is already over!")
+        }
+
         if self.on_break {
             return Err("Can't start a break because day is already on break");
         }
@@ -205,6 +209,10 @@ impl Day {
     }
 
     pub fn end_current_break_at(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
+        if self.has_ended() {
+            return Err("Can't end the break because day is already over!")
+        }
+
         if !self.on_break {
             return Err("Can't end the break: currently not on break!");
         }
