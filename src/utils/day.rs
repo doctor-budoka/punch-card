@@ -168,13 +168,12 @@ impl Day {
         if self.overall_interval.has_end() {
             return Err("Can't end the day because the day has already ended!");
         }
-        else {
-            self.overall_interval.end_at(at);
-            if self.on_break {
-                return self.end_current_break_at(at);
-            }
-            return Ok(());
+        let break_result: Result<(), &str> = self.end_current_break_at(at);
+        match break_result {
+            _ => (),
         }
+        self.overall_interval.end_at(at);
+        return Ok(());
     }
 
     #[allow(dead_code)]

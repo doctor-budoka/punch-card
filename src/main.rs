@@ -100,6 +100,7 @@ fn take_break(now: &DateTime<Utc>, mut day: Day) {
     if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
         write_day(&day);
+
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
         summarise_time(&day);
     }
