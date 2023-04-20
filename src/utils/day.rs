@@ -1,5 +1,5 @@
 use std::fmt;
-use chrono::prelude::{DateTime, Utc};
+use chrono::prelude::{DateTime, Local};
 use chrono::TimeZone;
 use chrono::Duration;
 use serde::de;
@@ -9,14 +9,14 @@ use serde::de::Visitor;
 use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR,create_dir_if_not_exists};
 
 pub const DAILY_DIR: &str = "days/";
-const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S";
+const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S %z";
 const DATE_FMT: &str = "%Y-%m-%d";
 
 
-struct DtUtcVisitor;
+struct DtVisitor;
 
-impl<'de> Visitor<'de> for DtUtcVisitor {
-    type Value = DtUtc;
+impl<'de> Visitor<'de> for DtVisitor {
+    type Value = Dt;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         return write!(formatter, "A datetime string");
@@ -26,19 +26,19 @@ impl<'de> Visitor<'de> for DtUtcVisitor {
     where
         E: de::Error,
     {
-        return match Utc.datetime_from_str(&s, DATETIME_FMT) {
-            Ok(time) => Ok(DtUtc::new(time.with_timezone(&Utc))),
+        return match Local.datetime_from_str(&s, DATETIME_FMT) {
+            Ok(time) => Ok(Dt::new(time.with_timezone(&Local))),
             Err(_) => Err(E::custom("Incorrect format for string")),
         }
     }
 }
 
 #[derive(Debug,Copy,Clone)]
-pub struct DtUtc(DateTime<Utc>);
+pub struct Dt(DateTime<Local>);
 
-impl DtUtc {
-    pub fn new(time: DateTime<Utc>) -> Self {
-        return DtUtc(time);
+impl Dt {
+    pub fn new(time: DateTime<Local>) -> Self {
+        return Dt(time);
     }
 
     pub fn as_string(&self) -> String {
@@ -51,12 +51,12 @@ impl DtUtc {
     }
 
     #[allow(dead_code)]
-    pub fn as_dt(&self) -> DateTime<Utc> {
+    pub fn as_dt(&self) -> DateTime<Local> {
         return self.0;
     }
 }
 
-impl Serialize for DtUtc {
+impl Serialize for Dt {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -65,39 +65,39 @@ impl Serialize for DtUtc {
     }
 }
 
-impl<'de> Deserialize<'de> for DtUtc {
-    fn deserialize<D>(deserializer: D) -> Result<DtUtc, D::Error>
+impl<'de> Deserialize<'de> for Dt {
+    fn deserialize<D>(deserializer: D) -> Result<Dt, D::Error>
     where
         D: Deserializer<'de>,
     {
-        return deserializer.deserialize_str(DtUtcVisitor);
+        return deserializer.deserialize_str(DtVisitor);
     }
 }
 
 #[derive(Debug,Copy,Clone,Serialize,Deserialize)]
 pub struct Interval {
-    start: DtUtc,
-    end: Option<DtUtc>,
+    start: Dt,
+    end: Option<Dt>,
 }
 
 impl Interval {
-    pub fn new(start: &DateTime<Utc>) -> Self {
-        return Self {start: DtUtc(*start), end: None};
+    pub fn new(start: &DateTime<Local>) -> Self {
+        return Self {start: Dt(*start), end: None};
     }
 
     #[allow(dead_code)]
     pub fn new_now() -> Self {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         return Self::new(&now);
     }
 
-    pub fn end_at(&mut self, end: &DateTime<Utc>) {
-        self.end = Some(DtUtc(*end));
+    pub fn end_at(&mut self, end: &DateTime<Local>) {
+        self.end = Some(Dt(*end));
     }
 
     #[allow(dead_code)]
     pub fn end_now(&mut self) {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         self.end_at(&now);
     }
 
@@ -108,7 +108,7 @@ impl Interval {
         };
     }
 
-    pub fn get_start(&self) -> DtUtc {
+    pub fn get_start(&self) -> Dt {
         return self.start;
     }
 
@@ -117,7 +117,7 @@ impl Interval {
         return self.get_start().as_string();
     }
 
-    pub fn get_end(&self) -> Option<DtUtc> {
+    pub fn get_end(&self) -> Option<Dt> {
         return self.end;
     }
 
@@ -154,17 +154,17 @@ pub struct Day {
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Utc>) -> Self {
+    pub fn new(start: &DateTime<Local>) -> Self {
         return Self {overall_interval: Interval::new(start), breaks: Vec::new(), on_break: false};
     }
 
     #[allow(dead_code)]
     pub fn new_now() -> Self {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         return Self::new(&now);
     }
 
-    pub fn end_day_at(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
+    pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
         if self.overall_interval.has_end() {
             return Err("Can't end the day because the day has already ended!");
         }
@@ -178,7 +178,7 @@ impl Day {
 
     #[allow(dead_code)]
     pub fn end_day_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         return self.end_day_at(&now);
     }
 
@@ -186,7 +186,7 @@ impl Day {
         return self.overall_interval.has_end();
     }
 
-    pub fn start_break(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
+    pub fn start_break(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't start a break because day is already over!")
         }
@@ -203,11 +203,11 @@ impl Day {
 
     #[allow(dead_code)]
     pub fn start_break_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         return self.start_break(&now);
     }
 
-    pub fn end_current_break_at(&mut self, at: &DateTime<Utc>) -> Result<(), &str> {
+    pub fn end_current_break_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't end the break because day is already over!")
         }
@@ -224,11 +224,11 @@ impl Day {
 
     #[allow(dead_code)]
     pub fn end_current_break_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Utc> = Utc::now();
+        let now: DateTime<Local> = Local::now();
         return self.end_current_break_at(&now);
     }
 
-    pub fn get_day_start(&self) -> DtUtc {
+    pub fn get_day_start(&self) -> Dt {
         return self.overall_interval.get_start();
     }
 
@@ -237,7 +237,7 @@ impl Day {
     }
 
     #[allow(dead_code)]
-    pub fn get_day_end(&self) -> Option<DtUtc> {
+    pub fn get_day_end(&self) -> Option<Dt> {
         return self.overall_interval.get_end();
     }
 
@@ -278,15 +278,15 @@ impl Day {
 
 
 #[allow(dead_code)]
-pub fn string_as_time(time_str: &String) -> DateTime<Utc> {
-    let start_time: DateTime<Utc> = Utc.datetime_from_str(&time_str, DATETIME_FMT)
+pub fn string_as_time(time_str: &String) -> DateTime<Local> {
+    let start_time: DateTime<Local> = Local.datetime_from_str(&time_str, DATETIME_FMT)
     .expect(&format!("Expected time in ISO format! Given: {}", time_str))
-    .with_timezone(&Utc);
+    .with_timezone(&Local);
     return start_time;
 }
 
 
-pub fn get_day_file_path(now: &DateTime<Utc>) -> String {
+pub fn get_day_file_path(now: &DateTime<Local>) -> String {
     let day_string: String = now.format(DATE_FMT).to_string();
     return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
 }
@@ -298,7 +298,7 @@ pub fn write_day(day: &Day) {
 }
 
 
-pub fn read_day(now: &DateTime<Utc>) -> Result<Day, std::io::Error> {
+pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
     let path = &get_day_file_path(&now);
     let read_result = read_file(path);
     return match read_result {
@@ -307,8 +307,8 @@ pub fn read_day(now: &DateTime<Utc>) -> Result<Day, std::io::Error> {
     };
 }
 
-pub fn get_current_day(now: &DateTime<Utc>) -> Result<Day, String> {
-    let yesterday: DateTime<Utc> = *now - Duration::days(1);
+pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
+    let yesterday: DateTime<Local> = *now - Duration::days(1);
     if let Ok(day) = read_day(&now) {
         return Ok(day);
     }
