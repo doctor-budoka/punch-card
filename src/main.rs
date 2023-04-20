@@ -1,5 +1,5 @@
 use std::env::args;
-use chrono::prelude::{DateTime, Utc};
+use chrono::prelude::{DateTime, Local};
 
 mod utils;
 use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Config, create_default_config_if_not_exists, get_config, update_config, Day, write_day, read_day, get_current_day};
@@ -38,7 +38,7 @@ fn main() {
 
     setup();
 
-    let now: DateTime<Utc> = Utc::now();
+    let now: DateTime<Local> = Local::now();
     run_command(command, now);
 }
 
@@ -48,7 +48,7 @@ fn setup() {
     create_default_config_if_not_exists();
 }
 
-fn run_command(command: SubCommand, now: DateTime<Utc>) {
+fn run_command(command: SubCommand, now: DateTime<Local>) {
     if command == SubCommand::In {
         punch_in(&now);
     }
@@ -72,7 +72,7 @@ fn run_command(command: SubCommand, now: DateTime<Utc>) {
     }
 }
 
-fn punch_in(now: &DateTime<Utc>) {
+fn punch_in(now: &DateTime<Local>) {
     if let Ok(_) = read_day(now) {
         println!("You've already clocked in for the day!");
     }
@@ -83,7 +83,7 @@ fn punch_in(now: &DateTime<Utc>) {
     }
 }
 
-fn punch_out(now: &DateTime<Utc>, mut day: Day) {
+fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
         println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
@@ -95,7 +95,7 @@ fn punch_out(now: &DateTime<Utc>, mut day: Day) {
     }
 }
 
-fn take_break(now: &DateTime<Utc>, mut day: Day) {
+fn take_break(now: &DateTime<Local>, mut day: Day) {
     let break_result = day.start_break(&now);
     if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
@@ -110,7 +110,7 @@ fn take_break(now: &DateTime<Utc>, mut day: Day) {
     }
 }
 
-fn resume(now: &DateTime<Utc>, mut day: Day) {
+fn resume(now: &DateTime<Local>, mut day: Day) {
     let resume_result = day.end_current_break_at(&now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
@@ -144,7 +144,7 @@ fn edit_day(day: Day) {
 }
 
 
-fn summary(now: &DateTime<Utc>, mut day: Day) {
+fn summary(now: &DateTime<Local>, mut day: Day) {
     let end_result = day.end_day_at(&now);
     match end_result {
         Ok(_) => (),
