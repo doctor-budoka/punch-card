@@ -1,3 +1,3 @@
 #!/bin/bash
 cargo build --release
-cp ./target/release/punch-card /usr/local/bin/punch
+cp ./target/release/punch /usr/local/bin/punch
