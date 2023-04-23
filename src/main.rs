@@ -13,6 +13,7 @@ enum SubCommand {
     Summary,
     View,
     Edit,
+    Invalid(String),
 }
 
 impl SubCommand {
@@ -25,10 +26,13 @@ impl SubCommand {
             "summary" => Self::Summary,
             "view" => Self::View,
             "edit" => Self::Edit,
-            other => panic!("{other} is not a valid subcommand!"),
+            other => Self::Invalid(other.to_string()),
         }
     }
 
+    fn get_allowed_strings() -> Vec<String> {
+        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit"].map(|x| x.to_string()));
+    }
 }
 
 fn main() {
@@ -52,6 +56,9 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     if command == SubCommand::In {
         punch_in(&now);
     }
+    else if let SubCommand::Invalid(original) = command {
+        handle_invalid_cmd(&original);
+    }
     else {
         let possible_day: Result<Day, String> = get_current_day(&now);
         if let Err(msg) = possible_day {
@@ -67,7 +74,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Summary => summary(&now, day),
             SubCommand::View => view_day(day),
             SubCommand::Edit => edit_day(day),
-            SubCommand::In => unreachable!("We shouldn't be processing punch in here"),
+            SubCommand::In | SubCommand::Invalid(_) => unreachable!("We shouldn't be processing punch in here"),
         }
     }
 }
@@ -80,6 +87,13 @@ fn punch_in(now: &DateTime<Local>) {
         let new_day: Day = Day::new(&now);
         println!("Clocking in for the day at '{}'", &new_day.get_day_start_as_str());
         write_day(&new_day);
+    }
+}
+
+fn handle_invalid_cmd(command: &String) {
+    println!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
+    for str_subcommand in SubCommand::get_allowed_strings() {
+        println!("\t{}", str_subcommand);
     }
 }
 
