@@ -6,26 +6,26 @@ use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Confi
 
 #[derive(PartialEq)]
 enum SubCommand {
-    In,
-    Out,
-    Pause,
-    Resume,
-    Summary,
-    View,
-    Edit,
+    In(Vec<String>),
+    Out(Vec<String>),
+    Pause(Vec<String>),
+    Resume(Vec<String>),
+    Summary(Vec<String>),
+    View(Vec<String>),
+    Edit(Vec<String>),
     Invalid(String),
 }
 
 impl SubCommand {
-    fn from_string(name: &String) -> Self {
+    fn from_string(name: &String, other_args: Vec<String>) -> Self {
         return match name.to_owned().trim() {
-            "in" => Self::In,
-            "out" => Self::Out,
-            "pause" => Self::Pause,
-            "resume" => Self::Resume,
-            "summary" => Self::Summary,
-            "view" => Self::View,
-            "edit" => Self::Edit,
+            "in" => Self::In(other_args),
+            "out" => Self::Out(other_args),
+            "pause" => Self::Pause(other_args),
+            "resume" => Self::Resume(other_args),
+            "summary" => Self::Summary(other_args),
+            "view" => Self::View(other_args),
+            "edit" => Self::Edit(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
@@ -38,7 +38,8 @@ impl SubCommand {
 fn main() {
     let env_args: Vec<String> = args().collect();
     let command_name: &String = &env_args[1];
-    let command: SubCommand = SubCommand::from_string(command_name);
+    let other_args: Vec<String> = env_args[1..].to_vec();
+    let command: SubCommand = SubCommand::from_string(command_name, other_args);
 
     setup();
 
@@ -53,8 +54,8 @@ fn setup() {
 }
 
 fn run_command(command: SubCommand, now: DateTime<Local>) {
-    if command == SubCommand::In {
-        punch_in(&now);
+    if let SubCommand::In(other_args) = command {
+        punch_in(&now, other_args);
     }
     else if let SubCommand::Invalid(original) = command {
         handle_invalid_cmd(&original);
@@ -68,26 +69,46 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
         let day: Day = possible_day.unwrap();
 
         match command {
-            SubCommand::Out => punch_out(&now, day),
-            SubCommand::Pause=> take_break(&now, day),
-            SubCommand::Resume => resume(&now, day),
-            SubCommand::Summary => summary(&now, day),
-            SubCommand::View => view_day(day),
-            SubCommand::Edit => edit_day(day),
-            SubCommand::In | SubCommand::Invalid(_) => unreachable!("We shouldn't be processing punch in here"),
+            SubCommand::Out(other_args) => punch_out(&now, day),
+            SubCommand::Pause(other_args) => take_break(&now, day),
+            SubCommand::Resume(other_args) => resume(&now, day),
+            SubCommand::Summary(other_args) => summary(&now, day),
+            SubCommand::View(other_args) => view_day(day),
+            SubCommand::Edit(other_args) => edit_day(day),
+            SubCommand::In(_) | SubCommand::Invalid(_) => unreachable!("We shouldn't be processing punch in here"),
         }
     }
 }
 
-fn punch_in(now: &DateTime<Local>) {
+fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
     if let Ok(_) = read_day(now) {
         println!("You've already clocked in for the day!");
     }
-    else {
-        let new_day: Day = Day::new(&now);
+    else{
+        let time_to_do: u64 = get_time_to_do_for_day(other_args);
+        let new_day: Day = Day::new(&now, time_to_do);
         println!("Clocking in for the day at '{}'", &new_day.get_day_start_as_str());
         write_day(&new_day);
     }
+}
+
+fn get_time_to_do_for_day(other_args: Vec<String>) -> u64 {
+    if other_args.len() == 0 {
+        return get_default_day_in_minutes();
+    }
+    let first_arg: Result<u64, std::num::ParseIntError> = other_args[0].parse::<u64>();
+    return match first_arg {
+        Ok(ttd) => ttd,
+        Err(_) => {
+            let ttd = get_default_day_in_minutes();
+            println!("'{}' is not a valid value for time to do today. Using default instead ({})", other_args[0], ttd);
+            ttd
+        },
+    };
+}
+
+fn get_default_day_in_minutes() -> u64 {
+    return get_config().day_in_minutes() as u64;
 }
 
 fn handle_invalid_cmd(command: &String) {

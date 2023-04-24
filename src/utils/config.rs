@@ -67,7 +67,6 @@ pub fn create_default_config_if_not_exists() {
     }
 }
 
-
 pub fn get_config() -> Config {
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
     let config: Config = read_config(&config_path);

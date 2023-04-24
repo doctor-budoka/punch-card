@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, time};
 use chrono::prelude::{DateTime, Local};
 use chrono::TimeZone;
 use chrono::Duration;
@@ -151,17 +151,23 @@ pub struct Day {
     pub overall_interval: Interval,
     pub breaks: Vec<Interval>,
     pub on_break: bool,
+    pub time_to_do: u64,
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Local>) -> Self {
-        return Self {overall_interval: Interval::new(start), breaks: Vec::new(), on_break: false};
+    pub fn new(start: &DateTime<Local>, time_to_do: u64) -> Self {
+        return Self {
+            overall_interval: Interval::new(start), 
+            breaks: Vec::new(), 
+            on_break: false, 
+            time_to_do: time_to_do,
+        };
     }
 
     #[allow(dead_code)]
-    pub fn new_now() -> Self {
+    pub fn new_now(time_to_do: u64) -> Self {
         let now: DateTime<Local> = Local::now();
-        return Self::new(&now);
+        return Self::new(&now, time_to_do);
     }
 
     pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
@@ -273,6 +279,10 @@ impl Day {
 
     pub fn get_day_path(&self) -> String {
         return get_day_file_path(&self.get_day_start().as_dt());
+    }
+
+    pub fn get_time_to_do(&self) -> u64 {
+        return self.time_to_do;
     }
 }
 
