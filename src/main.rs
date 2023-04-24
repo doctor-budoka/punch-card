@@ -69,12 +69,12 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
         let day: Day = possible_day.unwrap();
 
         match command {
-            SubCommand::Out(other_args) => punch_out(&now, day),
-            SubCommand::Pause(other_args) => take_break(&now, day),
-            SubCommand::Resume(other_args) => resume(&now, day),
-            SubCommand::Summary(other_args) => summary(&now, day),
-            SubCommand::View(other_args) => view_day(day),
-            SubCommand::Edit(other_args) => edit_day(day),
+            SubCommand::Out(_) => punch_out(&now, day),
+            SubCommand::Pause(_) => take_break(&now, day),
+            SubCommand::Resume(_) => resume(&now, day),
+            SubCommand::Summary(_) => summary(&now, day),
+            SubCommand::View(_) => view_day(day),
+            SubCommand::Edit(_) => edit_day(day),
             SubCommand::In(_) | SubCommand::Invalid(_) => unreachable!("We shouldn't be processing punch in here"),
         }
     }
