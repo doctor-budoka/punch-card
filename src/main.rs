@@ -95,11 +95,17 @@ fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
 
 fn get_time_to_do_for_day(other_args: Vec<String>) -> u64 {
     if other_args.len() == 0 {
-        return get_default_day_in_minutes();
+        let default_ttd: u64 = get_default_day_in_minutes();
+        println!("No time to do for the day provided. Using the default value ({}).", default_ttd);
+        println!("You can use `punch edit` to edit this value if this doesn't suit.");
+        return default_ttd;
     }
     let first_arg: Result<u64, std::num::ParseIntError> = other_args[0].parse::<u64>();
     return match first_arg {
-        Ok(ttd) => ttd,
+        Ok(ttd) => {
+            println!("Time to do for today: {}", ttd);
+            ttd
+        },
         Err(_) => {
             let ttd: u64 = get_default_day_in_minutes();
             println!("'{}' is not a valid value for time to do today. Using default instead ({}).", other_args[0], ttd);
