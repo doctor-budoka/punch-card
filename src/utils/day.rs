@@ -1,4 +1,4 @@
-use std::{fmt, time};
+use std::fmt;
 use chrono::prelude::{DateTime, Local};
 use chrono::TimeZone;
 use chrono::Duration;
@@ -266,7 +266,7 @@ impl Day {
     pub fn get_total_break_time(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
-            false => self.breaks.iter().map(|x| x.get_length()).sum(),
+            false => self.breaks.iter().map(|x: &Interval| x.get_length()).sum(),
         };
     }
 
@@ -310,14 +310,14 @@ pub fn get_day_file_path(now: &DateTime<Local>) -> String {
 
 
 pub fn write_day(day: &Day) {
-    let path = &get_day_file_path(&day.get_day_start().as_dt());
+    let path: &String = &get_day_file_path(&day.get_day_start().as_dt());
     write_file(path, day.as_string());
 }
 
 
 pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
-    let path = &get_day_file_path(&now);
-    let read_result = read_file(path);
+    let path: &String = &get_day_file_path(&now);
+    let read_result: Result<String, std::io::Error> = read_file(path);
     return match read_result {
         Ok(string) => Ok(Day::from_string(&string)),
         Err(err) => Err(err),
