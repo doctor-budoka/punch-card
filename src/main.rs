@@ -102,7 +102,8 @@ fn get_time_to_do_for_day(other_args: Vec<String>) -> u64 {
         Ok(ttd) => ttd,
         Err(_) => {
             let ttd: u64 = get_default_day_in_minutes();
-            println!("'{}' is not a valid value for time to do today. Using default instead ({})", other_args[0], ttd);
+            println!("'{}' is not a valid value for time to do today. Using default instead ({}).", other_args[0], ttd);
+            println!("You can use `punch edit` to edit this value if this doesn't suit.");
             ttd
         },
     };
