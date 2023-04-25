@@ -38,7 +38,7 @@ impl SubCommand {
 fn main() {
     let env_args: Vec<String> = args().collect();
     let command_name: &String = &env_args[1];
-    let other_args: Vec<String> = env_args[1..].to_vec();
+    let other_args: Vec<String> = env_args[2..].to_vec();
     let command: SubCommand = SubCommand::from_string(command_name, other_args);
 
     setup();
