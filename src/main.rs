@@ -75,7 +75,8 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Summary(_) => summary(&now, day),
             SubCommand::View(_) => view_day(day),
             SubCommand::Edit(_) => edit_day(day),
-            SubCommand::In(_) | SubCommand::Invalid(_) => unreachable!("We shouldn't be processing punch in here"),
+            SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
+            SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
     }
 }
