@@ -190,12 +190,12 @@ fn summary(now: &DateTime<Local>, mut day: Day) {
 
 
 fn summarise_time(day: &Day) {
-    let time_so_far: i64 = day.get_time_done().expect("Day is over so we should be able to calculate time done!");
+    let time_left: i64 = day.get_time_left().expect("Day is over so we should be able to calculate time done!");
+
     let mut config: Config = get_config();
-    let time_left: i64 = config.day_in_minutes() - time_so_far;
     config.update_minutes_behind(time_left);
 
-    println!("Time done today: {}", time_so_far);
+    println!("Time done today: {}", day.get_time_done().unwrap());
     println!("Time left today: {}", time_left);
     println!("Minutes behind overall: {}", config.minutes_behind());
     println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());

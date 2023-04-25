@@ -284,6 +284,13 @@ impl Day {
     pub fn get_time_to_do(&self) -> u64 {
         return self.time_to_do;
     }
+
+    pub fn get_time_left(&self) -> Option<i64> {
+        return match self.get_time_done() {
+            Some(td) => Some(self.get_time_to_do() as i64 - td),
+            None => None,
+        }
+    }
 }
 
 
