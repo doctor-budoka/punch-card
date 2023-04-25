@@ -121,7 +121,6 @@ fn handle_invalid_cmd(command: &String) {
 fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
-        println!("Time done: {}", day.get_time_done().expect("Day is over, we should be able to calculate time done!"));
         write_day(&day);
         update_time_behind(day)
     }
@@ -137,7 +136,8 @@ fn take_break(now: &DateTime<Local>, mut day: Day) {
         write_day(&day);
 
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        summarise_time(&day);
+        let mut config: Config = get_config();
+        summarise_time(&day, &mut config);
     }
     else {
         let msg = break_result.unwrap_err();
@@ -151,7 +151,8 @@ fn resume(now: &DateTime<Local>, mut day: Day) {
         println!("Back to work at '{}'", &now);
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        summarise_time(&day);
+        let mut config: Config = get_config();
+        summarise_time(&day, &mut config);
     }
     else {
         let msg = resume_result.unwrap_err();
@@ -185,14 +186,13 @@ fn summary(now: &DateTime<Local>, mut day: Day) {
         Ok(_) => (),
         _ => (),
     }
-    summarise_time(&day);
+    let mut config: Config = get_config();
+    summarise_time(&day, &mut config);
 }
 
 
-fn summarise_time(day: &Day) {
+fn summarise_time(day: &Day, config: &mut Config) {
     let time_left: i64 = day.get_time_left().expect("Day is over so we should be able to calculate time left!");
-
-    let mut config: Config = get_config();
     config.update_minutes_behind(time_left);
 
     println!("Time done today: {}", day.get_time_done().unwrap());
@@ -204,15 +204,8 @@ fn summarise_time(day: &Day) {
 
 fn update_time_behind(day: Day) {
     if day.has_ended() {
-        let time_so_far: i64 = day.get_time_done().expect("Day is over, we should be able to calculate time done!");
         let mut config: Config = get_config();
-        let time_left: i64 = config.day_in_minutes() - time_so_far;
-        config.update_minutes_behind(time_left);
-
-        println!("Time done today: {}", time_so_far);
-        println!("Time left today: {}", time_left);
-        println!("Minutes behind overall: {}", config.minutes_behind());
-        println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
+        summarise_time(&day, &mut config);
         update_config(config);
     }
     else {
