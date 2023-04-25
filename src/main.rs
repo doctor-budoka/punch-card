@@ -31,7 +31,7 @@ impl SubCommand {
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit"].map(|x| x.to_string()));
+        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit"].map(|x: &str| x.to_string()));
     }
 }
 
@@ -100,7 +100,7 @@ fn get_time_to_do_for_day(other_args: Vec<String>) -> u64 {
     return match first_arg {
         Ok(ttd) => ttd,
         Err(_) => {
-            let ttd = get_default_day_in_minutes();
+            let ttd: u64 = get_default_day_in_minutes();
             println!("'{}' is not a valid value for time to do today. Using default instead ({})", other_args[0], ttd);
             ttd
         },
@@ -131,7 +131,7 @@ fn punch_out(now: &DateTime<Local>, mut day: Day) {
 }
 
 fn take_break(now: &DateTime<Local>, mut day: Day) {
-    let break_result = day.start_break(&now);
+    let break_result: Result<(), &str> = day.start_break(&now);
     if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
         write_day(&day);
@@ -146,7 +146,7 @@ fn take_break(now: &DateTime<Local>, mut day: Day) {
 }
 
 fn resume(now: &DateTime<Local>, mut day: Day) {
-    let resume_result = day.end_current_break_at(&now);
+    let resume_result: Result<(), &str> = day.end_current_break_at(&now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
         write_day(&day);
@@ -180,7 +180,7 @@ fn edit_day(day: Day) {
 
 
 fn summary(now: &DateTime<Local>, mut day: Day) {
-    let end_result = day.end_day_at(&now);
+    let end_result: Result<(), &str> = day.end_day_at(&now);
     match end_result {
         Ok(_) => (),
         _ => (),
@@ -190,7 +190,7 @@ fn summary(now: &DateTime<Local>, mut day: Day) {
 
 
 fn summarise_time(day: &Day) {
-    let time_left: i64 = day.get_time_left().expect("Day is over so we should be able to calculate time done!");
+    let time_left: i64 = day.get_time_left().expect("Day is over so we should be able to calculate time left!");
 
     let mut config: Config = get_config();
     config.update_minutes_behind(time_left);
