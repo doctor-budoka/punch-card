@@ -146,6 +146,23 @@ impl Interval {
     }
 }
 
+
+#[derive(Debug,Serialize,Deserialize)]
+pub struct Note {
+    time: Dt,
+    msg: String,
+}
+
+impl Note {
+    pub fn new(time: &DateTime<Local>, msg: &String) -> Self {
+        return Note {
+            time: Dt(*time),
+            msg: msg.to_string(),
+        };
+    }
+}
+
+
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Day {
     pub overall_interval: Interval,
