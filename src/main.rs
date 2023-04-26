@@ -207,11 +207,14 @@ fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<String
         println!("'punch note' requires a msg argument!")
     }
     else if other_args.len() > 1 {
-        println!("'punch note' takes a single argument. Consider wrapping your message in quotes")
+        println!("'punch note' takes a single argument. Consider wrapping your message in quotes.")
     }
-    let msg: String = (&other_args[0]).to_string();
-    day.add_note(now, &msg);
-    write_day(&day);
+    else {
+        let msg: String = (&other_args[0]).to_string();
+        day.add_note(now, &msg);
+        write_day(&day);
+        println!("New note '{}' added to today at '{}'.", msg, now);
+    }
 }
 
 
