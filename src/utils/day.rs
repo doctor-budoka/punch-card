@@ -146,12 +146,30 @@ impl Interval {
     }
 }
 
+
+#[derive(Debug,Serialize,Deserialize)]
+pub struct Note {
+    time: Dt,
+    msg: String,
+}
+
+impl Note {
+    pub fn new(time: &DateTime<Local>, msg: &String) -> Self {
+        return Note {
+            time: Dt(*time),
+            msg: msg.to_string(),
+        };
+    }
+}
+
+
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Day {
     pub overall_interval: Interval,
     pub breaks: Vec<Interval>,
     pub on_break: bool,
     pub time_to_do: u64,
+    pub notes: Vec<Note>,
 }
 
 impl Day {
@@ -161,6 +179,7 @@ impl Day {
             breaks: Vec::new(), 
             on_break: false, 
             time_to_do: time_to_do,
+            notes: Vec::new(),
         };
     }
 
@@ -290,6 +309,11 @@ impl Day {
             Some(td) => Some(self.get_time_to_do() as i64 - td),
             None => None,
         }
+    }
+
+    pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {
+        let new_note: Note = Note::new(time, msg);
+        self.notes.push(new_note);
     }
 }
 

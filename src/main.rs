@@ -13,6 +13,7 @@ enum SubCommand {
     Summary(Vec<String>),
     View(Vec<String>),
     Edit(Vec<String>),
+    Note(Vec<String>),
     Invalid(String),
 }
 
@@ -26,12 +27,13 @@ impl SubCommand {
             "summary" => Self::Summary(other_args),
             "view" => Self::View(other_args),
             "edit" => Self::Edit(other_args),
+            "note" => Self::Note(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit"].map(|x: &str| x.to_string()));
+        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit", "note"].map(|x: &str| x.to_string()));
     }
 }
 
@@ -75,6 +77,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Summary(_) => summary(&now, day),
             SubCommand::View(_) => view_day(day),
             SubCommand::Edit(_) => edit_day(day),
+            SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
@@ -196,6 +199,22 @@ fn summary(now: &DateTime<Local>, mut day: Day) {
     }
     let mut config: Config = get_config();
     summarise_time(&day, &mut config);
+}
+
+
+fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
+    if other_args.len() == 0 {
+        println!("'punch note' requires a msg argument!")
+    }
+    else if other_args.len() > 1 {
+        println!("'punch note' takes a single argument. Consider wrapping your message in quotes.")
+    }
+    else {
+        let msg: String = (&other_args[0]).to_string();
+        day.add_note(now, &msg);
+        write_day(&day);
+        println!("New note '{}' added to today at '{}'.", msg, now);
+    }
 }
 
 
