@@ -2,7 +2,10 @@ use std::env::args;
 use chrono::prelude::{DateTime, Local};
 
 mod utils;
-use utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists, Config, create_default_config_if_not_exists, get_config, update_config, Day, write_day, read_day, get_current_day};
+use crate::utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists};
+use crate::utils::{Config, create_default_config_if_not_exists};
+use crate::utils::{get_config_path, get_config, update_config};
+use crate::utils::{Day, write_day, read_day, get_current_day};
 
 #[derive(PartialEq)]
 enum SubCommand {
@@ -14,6 +17,7 @@ enum SubCommand {
     View(Vec<String>),
     Edit(Vec<String>),
     Note(Vec<String>),
+    EditConfig(Vec<String>),
     Invalid(String),
 }
 
@@ -28,12 +32,13 @@ impl SubCommand {
             "view" => Self::View(other_args),
             "edit" => Self::Edit(other_args),
             "note" => Self::Note(other_args),
+            "edit-config" => Self::EditConfig(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit", "note"].map(|x: &str| x.to_string()));
+        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit", "note", "edit-config"].map(|x: &str| x.to_string()));
     }
 }
 
@@ -77,6 +82,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Summary(_) => summary(&now, day),
             SubCommand::View(_) => view_day(day),
             SubCommand::Edit(_) => edit_day(day),
+            SubCommand::EditConfig(_) => edit_config(),
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
@@ -179,15 +185,25 @@ fn view_day(day: Day) {
 fn edit_day(day: Day) {
     let path: String = day.get_day_path();
     println!("Opening day in vim...");
-    {
-        std::process::Command::new("vim")
-        .arg(path)
-        .spawn()
-        .expect("Error: Failed to run editor")
-        .wait()
-        .expect("Error: Editor returned a non-zero status");
-    }
+    edit_file_in_vim(path);
     println!("Vim closed.");
+}
+
+fn edit_config() {
+    let config_path: String = get_config_path();
+    println!("Opening config in vim...");
+    edit_file_in_vim(config_path);
+    println!("Vim closed.");
+}
+
+
+fn edit_file_in_vim(path: String) {
+    std::process::Command::new("vim")
+    .arg(path)
+    .spawn()
+    .expect("Error: Failed to run editor")
+    .wait()
+    .expect("Error: Editor returned a non-zero status");
 }
 
 
