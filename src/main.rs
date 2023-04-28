@@ -187,7 +187,7 @@ fn view_day(day: Day) {
 
 fn view_config() {
     println!("Here's the current config: \n");
-    let mut config: Config = get_config();
+    let config: Config = get_config();
     println!("{}", config.as_string());
 }
 
