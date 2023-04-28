@@ -18,6 +18,7 @@ enum SubCommand {
     Edit(Vec<String>),
     Note(Vec<String>),
     EditConfig(Vec<String>),
+    ViewConfig(Vec<String>),
     Invalid(String),
 }
 
@@ -33,6 +34,7 @@ impl SubCommand {
             "edit" => Self::Edit(other_args),
             "note" => Self::Note(other_args),
             "edit-config" => Self::EditConfig(other_args),
+            "view-config" => Self::ViewConfig(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
@@ -83,6 +85,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::View(_) => view_day(day),
             SubCommand::Edit(_) => edit_day(day),
             SubCommand::EditConfig(_) => edit_config(),
+            SubCommand::ViewConfig(_) => view_config(),
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
@@ -180,6 +183,12 @@ fn resume(now: &DateTime<Local>, mut day: Day) {
 fn view_day(day: Day) {
     println!("Here's the day so far: \n");
     println!("{}", day.as_string());
+}
+
+fn view_config() {
+    println!("Here's the current config: \n");
+    let config: Config = get_config();
+    println!("{}", config.as_string());
 }
 
 fn edit_day(day: Day) {
