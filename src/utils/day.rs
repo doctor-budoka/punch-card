@@ -7,6 +7,7 @@ use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
 
 use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR,create_dir_if_not_exists};
+use crate::utils::work_summary::WorkSummary;
 
 pub const DAILY_DIR: &str = "days/";
 const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S %z";
@@ -170,6 +171,7 @@ pub struct Day {
     pub on_break: bool,
     pub time_to_do: u64,
     pub notes: Vec<Note>,
+    pub summaries: Vec<WorkSummary>,
 }
 
 impl Day {
@@ -180,6 +182,7 @@ impl Day {
             on_break: false, 
             time_to_do: time_to_do,
             notes: Vec::new(),
+            summaries: Vec::new(),
         };
     }
 
@@ -314,6 +317,11 @@ impl Day {
     pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {
         let new_note: Note = Note::new(time, msg);
         self.notes.push(new_note);
+    }
+
+    pub fn add_summary(&mut self, category: String, project: String, task: String, summary: String) {
+        let summary: WorkSummary = WorkSummary::new(category, project, task, summary);
+        self.summaries.push(summary);
     }
 }
 
