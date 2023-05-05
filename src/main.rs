@@ -19,6 +19,7 @@ enum SubCommand {
     Note(Vec<String>),
     EditConfig(Vec<String>),
     ViewConfig(Vec<String>),
+    AddSummary(Vec<String>),
     Invalid(String),
 }
 
@@ -35,12 +36,17 @@ impl SubCommand {
             "note" => Self::Note(other_args),
             "edit-config" => Self::EditConfig(other_args),
             "view-config" => Self::ViewConfig(other_args),
+            "add-summary" => Self::AddSummary(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        return Vec::from(["in", "out", "pause", "resume", "summary", "view", "edit", "note", "edit-config"].map(|x: &str| x.to_string()));
+        return Vec::from(
+            [
+                "in", "out", "pause", "resume", "summary", "view", "edit", "note", "edit-config", "add-summary"
+            ].map(|x: &str| x.to_string())
+        );
     }
 }
 
@@ -87,6 +93,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::EditConfig(_) => edit_config(),
             SubCommand::ViewConfig(_) => view_config(),
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
+            SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
@@ -239,6 +246,19 @@ fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<String
         day.add_note(now, &msg);
         write_day(&day);
         println!("New note '{}' added to today at '{}'.", msg, now);
+    }
+}
+
+fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
+    if other_args.len() != 4 {
+        println!("'punch add-summary' takes exactly 4 arguments: category, project, task and summary.")
+    }
+    else {
+        let (category, project, task, summary) = (
+            other_args[0].to_string(), other_args[1].to_string(), other_args[2].to_string(), other_args[3].to_string()
+        );
+        day.add_summary(category, project, task, summary);
+        write_day(&day);
     }
 }
 
