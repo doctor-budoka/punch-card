@@ -277,8 +277,12 @@ impl Day {
         return serde_yaml::to_string(&self).unwrap();
     }
 
+    pub fn try_from_string(yaml_str: &String) -> Result<Day, serde_yaml::Error> {
+        return serde_yaml::from_str(yaml_str);
+    }
+
     pub fn from_string(yaml_str: &String) -> Self {
-        return serde_yaml::from_str(yaml_str).unwrap();
+        return Self::try_from_string(yaml_str).unwrap();
     }
 
     pub fn get_day_length(&self) -> Option<i64> {
