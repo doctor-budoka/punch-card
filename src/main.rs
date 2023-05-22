@@ -2,10 +2,9 @@ use std::env::args;
 use chrono::prelude::{DateTime, Local};
 
 mod utils;
-use crate::utils::{create_base_dir_if_not_exists, create_daily_dir_if_not_exists};
-use crate::utils::{Config, create_default_config_if_not_exists};
-use crate::utils::{get_config_path, get_config, update_config};
-use crate::utils::{Day, write_day, read_day, get_current_day};
+use crate::utils::file_io::{create_base_dir_if_not_exists, read_file};
+use crate::utils::config::{Config, create_default_config_if_not_exists, get_config_path, get_config, update_config};
+use crate::utils::day::{Day, write_day, read_day, get_current_day};
 
 #[derive(PartialEq)]
 enum SubCommand {
