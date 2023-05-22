@@ -3,7 +3,7 @@ use chrono::prelude::{DateTime, Local};
 
 mod utils;
 use crate::utils::file_io::{create_base_dir_if_not_exists, read_file};
-use crate::utils::config::{Config, create_default_config_if_not_exists, get_config_path, get_config, update_config};
+use crate::utils::config::{Config, create_default_config_if_not_exists, get_config_path, get_config, update_config, write_config};
 use crate::utils::day::{Day, create_daily_dir_if_not_exists, write_day, read_day, get_current_day};
 
 #[derive(PartialEq)]
@@ -204,7 +204,7 @@ fn edit_day(day: Day) {
 
     println!("Opening day in vim...");
     edit_file_in_vim(&temp_path);
-    println!("Vim closed. Checking validity...");
+    println!("Vim closed.");
     let yaml_str: String = read_file(&temp_path).unwrap();
     let new_day_result: Result<Day, serde_yaml::Error> = Day::try_from_string(&yaml_str);
     match new_day_result {
@@ -216,9 +216,19 @@ fn edit_day(day: Day) {
 
 fn edit_config() {
     let config_path: String = get_config_path();
+    let temp_path: String = (&config_path).to_string() + "-temp";
+    std::process::Command::new("cp").args([&config_path, &temp_path]).output().expect("Failed to create temporary data!");
+
     println!("Opening config in vim...");
-    edit_file_in_vim(&config_path);
+    edit_file_in_vim(&temp_path);
     println!("Vim closed.");
+    let yaml_str: String = read_file(&temp_path).unwrap();
+    let new_config_result: Result<Config, serde_yaml::Error> = Config::try_from_string(&yaml_str);
+    match new_config_result {
+        Ok(new_config_result) => write_config(&config_path, &new_config_result),
+        Err(_) => println!("Invalid Config created. Please try again"),
+    };
+    std::process::Command::new("rm").arg(&temp_path).output().expect("Failed to clean up the temporary data!");
 }
 
 
