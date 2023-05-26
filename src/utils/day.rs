@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt::{self};
 use chrono::prelude::{DateTime, Local};
 use chrono::TimeZone;
 use chrono::Duration;
@@ -293,10 +293,6 @@ impl Day {
             (Some(day), Some(breaks)) => Some(day - breaks),
             (_, _) => None,
         };
-    }
-
-    pub fn get_day_path(&self) -> String {
-        return get_day_file_path(&self.get_day_start().as_dt());
     }
 
     pub fn get_time_to_do(&self) -> u64 {

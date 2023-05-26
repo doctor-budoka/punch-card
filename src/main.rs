@@ -3,8 +3,8 @@ use chrono::prelude::{DateTime, Local};
 use utils::file_io::SafeFileEdit;
 
 mod utils;
-use crate::utils::file_io::{create_base_dir_if_not_exists, read_file};
-use crate::utils::config::{Config, create_default_config_if_not_exists, get_config_path, get_config, update_config, write_config};
+use crate::utils::file_io::{create_base_dir_if_not_exists};
+use crate::utils::config::{Config, create_default_config_if_not_exists, get_config, update_config};
 use crate::utils::day::{Day, create_daily_dir_if_not_exists, write_day, read_day, get_current_day};
 
 #[derive(PartialEq)]
@@ -203,7 +203,7 @@ fn edit_day(day: Day) {
 }
 
 fn edit_config() {
-    let mut config = get_config();
+    let config = get_config();
     config.safe_edit_from_file();
 }
 
