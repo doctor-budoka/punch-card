@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self};
 use chrono::prelude::{DateTime, Local};
 use chrono::TimeZone;
 use chrono::Duration;
@@ -6,7 +6,7 @@ use serde::de;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
 
-use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR,create_dir_if_not_exists};
+use crate::utils::file_io::{expand_path,write_file,read_file, BASE_DIR, create_dir_if_not_exists, FromString, ToFile, SafeFileEdit};
 use crate::utils::work_summary::WorkSummary;
 
 pub const DAILY_DIR: &str = "days/";
@@ -277,14 +277,6 @@ impl Day {
         return serde_yaml::to_string(&self).unwrap();
     }
 
-    pub fn try_from_string(yaml_str: &String) -> Result<Day, serde_yaml::Error> {
-        return serde_yaml::from_str(yaml_str);
-    }
-
-    pub fn from_string(yaml_str: &String) -> Self {
-        return Self::try_from_string(yaml_str).unwrap();
-    }
-
     pub fn get_day_length(&self) -> Option<i64> {
         return self.overall_interval.get_length() 
     }
@@ -301,10 +293,6 @@ impl Day {
             (Some(day), Some(breaks)) => Some(day - breaks),
             (_, _) => None,
         };
-    }
-
-    pub fn get_day_path(&self) -> String {
-        return get_day_file_path(&self.get_day_start().as_dt());
     }
 
     pub fn get_time_to_do(&self) -> u64 {
@@ -329,6 +317,28 @@ impl Day {
     }
 }
 
+impl FromString<Day, serde_yaml::Error> for Day {
+    fn try_from_string(yaml_str: &String) -> Result<Day, serde_yaml::Error> {
+        return serde_yaml::from_str(yaml_str);
+    }
+
+    fn from_string(yaml_str: &String) -> Self {
+        return Self::try_from_string(yaml_str).unwrap();
+    }
+}
+
+impl ToFile for Day {
+    fn get_path(&self) -> String {
+        return get_day_file_path(&self.get_day_start().as_dt());
+    }
+
+    fn write(&self) {
+        let path: &String = &self.get_path();
+        write_file(path, self.as_string());
+    }
+}
+
+impl SafeFileEdit<Day, serde_yaml::Error> for Day{}
 
 #[allow(dead_code)]
 pub fn string_as_time(time_str: &String) -> DateTime<Local> {

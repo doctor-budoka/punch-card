@@ -1,6 +1,6 @@
 use serde::{Serialize,Deserialize};
 use std::path::Path;
-use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR};
+use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR, FromString, ToFile, SafeFileEdit};
 
 pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
@@ -25,14 +25,6 @@ impl Config {
         return serde_yaml::to_string(&self).unwrap();
     }
 
-    pub fn try_from_string(yaml_str: &String) -> Result<Config, serde_yaml::Error> {
-        return serde_yaml::from_str(yaml_str);
-    }
-
-    pub fn from_string(yaml_str: &String) -> Self {
-        return Self::try_from_string(yaml_str).unwrap();
-    }
-
     pub fn day_in_minutes(&self) -> i64 {
         return self.day_in_minutes;
     }
@@ -53,6 +45,29 @@ impl Config {
         self.minutes_behind_non_neg = new_non_neg_time_behind;
     }
 }
+
+impl FromString<Config, serde_yaml::Error> for Config {
+    fn try_from_string(yaml_str: &String) -> Result<Config, serde_yaml::Error> {
+        return serde_yaml::from_str(yaml_str);
+    }
+
+    fn from_string(yaml_str: &String) -> Self {
+        return Self::try_from_string(yaml_str).unwrap();
+    }
+}
+
+impl ToFile for Config {
+    fn get_path(&self) -> String {
+        return get_config_path();
+    }
+
+    fn write(&self) {
+        let path: &String = &self.get_path();
+        write_config(path, self);
+    }
+}
+
+impl SafeFileEdit<Config, serde_yaml::Error> for Config{}
 
 pub fn write_config(path: &String, config: &Config) {
     write_file(path, config.as_string());
