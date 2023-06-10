@@ -74,7 +74,10 @@ pub trait SafeFileEdit<T:FromString<T,E> + ToFile, E>: ToFile + FromString<T, E>
         let yaml_str: String = read_file(&temp_path).unwrap();
         let new_result: Result<T, E> = T::try_from_string(&yaml_str);
         match new_result {
-            Ok(new_value) => new_value.write(),
+            Ok(new_value) => {
+                std::process::Command::new("rm").arg(&std_path).output().expect("Failed to clean up the temporary data!");
+                new_value.write();
+            },
             Err(_) => println!("Invalid Config created. Please try again"),
         };
         std::process::Command::new("rm").arg(&temp_path).output().expect("Failed to clean up the temporary data!");
