@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::Path;
 use std::env::var;
 
-pub const BASE_DIR: &str = "~/.punch-card-edit-test/";
+pub const BASE_DIR: &str = "~/.punch-card/";
 
 pub fn write_file(path: &str, contents: String) {
     let path_to_write: String = expand_path(path);
