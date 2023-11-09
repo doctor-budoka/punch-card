@@ -3,6 +3,7 @@ use chrono::Duration;
 use chrono::TimeZone;
 use serde::{Serialize, Deserialize};
 
+use crate::units::components::{Note};
 use crate::units::interval::{Dt,Interval, DATE_FMT, DATETIME_FMT};
 
 use crate::utils::file_io::{
@@ -17,21 +18,6 @@ use crate::utils::file_io::{
 use crate::utils::work_summary::WorkSummary;
 
 pub const DAILY_DIR: &str = "days/";
-
-#[derive(Debug,Serialize,Deserialize)]
-pub struct Note {
-    time: Dt,
-    msg: String,
-}
-
-impl Note {
-    pub fn new(time: &DateTime<Local>, msg: &String) -> Self {
-        return Note {
-            time: Dt(*time),
-            msg: msg.to_string(),
-        };
-    }
-}
 
 
 #[derive(Debug,Serialize,Deserialize)]
