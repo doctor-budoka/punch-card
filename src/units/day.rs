@@ -23,51 +23,61 @@ pub const DAILY_DIR: &str = "days/";
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Day {
     pub overall_interval: Interval,
+    pub timeblocks: Vec<TimeBlock>,
     pub breaks: Vec<Interval>,
     pub on_break: bool,
     pub time_to_do: u64,
-    pub notes: Vec<Note>,
     pub summaries: Vec<WorkSummary>,
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Local>, time_to_do: u64) -> Self {
+    pub fn new(start: &DateTime<Local>, time_to_do: u64, initial_task: String) -> Self {
+        initial_block: TimeBlock = TimeBlock::new(intial_task, start);
         return Self {
-            overall_interval: Interval::new(start), 
+            overall_interval: Interval::new(start),
+            timeblocks: ![initial_block], 
             breaks: Vec::new(), 
             on_break: false, 
             time_to_do: time_to_do,
-            notes: Vec::new(),
             summaries: Vec::new(),
         };
-    }
-
-    #[allow(dead_code)]
-    pub fn new_now(time_to_do: u64) -> Self {
-        let now: DateTime<Local> = Local::now();
-        return Self::new(&now, time_to_do);
     }
 
     pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
         if self.overall_interval.has_end() {
             return Err("Can't end the day because the day has already ended!");
         }
-        let break_result: Result<(), &str> = self.end_current_break_at(at);
+        let block_result: Result<(), &str> = self.end_current_block_at(at);
         match break_result {
-            _ => (),
+            Ok(_) => (),
+            Err(msg) => return Err(msg),
         }
         self.overall_interval.end_at(at);
         return Ok(());
     }
 
-    #[allow(dead_code)]
-    pub fn end_day_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Local> = Local::now();
-        return self.end_day_at(&now);
-    }
-
     pub fn has_ended(&self) -> bool {
         return self.overall_interval.has_end();
+    }
+
+    pub fn end_current_block_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
+        self.breaks.last_mut()
+            .expect("Expected there to be an ongoing block!")
+            .end_at(at);
+        return Ok(());
+    }
+
+    pub fn start_new_block(
+        &mut self, 
+        task_name: String, 
+        at: &DateTime<Local>) -> Result<TimeBlock, &str> {
+        if self.has_ended() {
+            return Err("Can't start a new block because day is already over!")
+        }
+        self.end_current_block_at(at);
+        let new_block: TimeBlock = TimeBlock::new(task_name, at);
+        self.timeblocks.push(new_block);
+        return Ok(new_block);
     }
 
     pub fn start_break(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
@@ -85,12 +95,6 @@ impl Day {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn start_break_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Local> = Local::now();
-        return self.start_break(&now);
-    }
-
     pub fn end_current_break_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't end the break because day is already over!")
@@ -104,12 +108,6 @@ impl Day {
             self.on_break = false;
             return Ok(());
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn end_current_break_now(&mut self) -> Result<(), &str> {
-        let now: DateTime<Local> = Local::now();
-        return self.end_current_break_at(&now);
     }
 
     pub fn get_day_start(&self) -> Dt {
