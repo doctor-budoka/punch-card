@@ -24,7 +24,7 @@ pub const DAILY_DIR: &str = "days/";
 pub struct Day {
     pub overall_interval: Interval,
     pub timeblocks: Vec<TimeBlock>,
-    pub breaks: Vec<Interval>,
+    pub breaks: Vec<usize>,
     pub on_break: bool,
     pub time_to_do: u64,
     pub summaries: Vec<WorkSummary>,
@@ -70,42 +70,32 @@ impl Day {
     pub fn start_new_block(
         &mut self, 
         task_name: String, 
-        at: &DateTime<Local>) -> Result<TimeBlock, &str> {
+        at: &DateTime<Local>) 
+    -> Result<TimeBlock, &str> {
         if self.has_ended() {
             return Err("Can't start a new block because day is already over!")
         }
         self.end_current_block_at(at);
         let new_block: TimeBlock = TimeBlock::new(task_name, at);
         self.timeblocks.push(new_block);
+        if self.on_break {
+            self.on_break = false;
+        }
         return Ok(new_block);
     }
 
-    pub fn start_break(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
-        if self.has_ended() {
-            return Err("Can't start a break because day is already over!")
-        }
-
+    pub fn start_break_at(
+        &mut self, 
+        break_name: String, 
+        at: &DateTime<Local>) 
+    -> Result<(), &str> {
         if self.on_break {
             return Err("Can't start a break because day is already on break");
         }
         else {
             self.on_break = true;
-            self.breaks.push(Interval::new(at));
-            return Ok(());
-        }
-    }
-
-    pub fn end_current_break_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
-        if self.has_ended() {
-            return Err("Can't end the break because day is already over!")
-        }
-
-        if !self.on_break {
-            return Err("Can't end the break: currently not on break!");
-        }
-        else {
-            self.breaks.last_mut().expect("Expected break to be ongoing!").end_at(at);
-            self.on_break = false;
+            self.start_new_block(break_name, at).expect("Should be able to start a new block!");
+            self.breaks.push(self.timeblocks.len() - 1);
             return Ok(());
         }
     }
