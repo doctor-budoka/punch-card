@@ -4,14 +4,14 @@ use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR, FromStrin
 
 pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
-const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up"
-const DEFAULT_BREAK_TASK: &str = "Break"
+const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
+const DEFAULT_BREAK_TASK: &str = "Break";
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Config {
     day_in_minutes: i64,
-    default_punch_in_task: &str,
-    default_break_task: &str,
+    default_punch_in_task: String,
+    default_break_task: String,
     minutes_behind: i64,
     minutes_behind_non_neg: u64,
 }
