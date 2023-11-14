@@ -3,7 +3,7 @@ use chrono::Duration;
 use chrono::TimeZone;
 use serde::{Serialize, Deserialize};
 
-use crate::units::components::{Note};
+use crate::units::components::{Note, TimeBlock};
 use crate::units::interval::{Dt,Interval, DATE_FMT, DATETIME_FMT};
 
 use crate::utils::file_io::{
@@ -32,10 +32,10 @@ pub struct Day {
 
 impl Day {
     pub fn new(start: &DateTime<Local>, time_to_do: u64, initial_task: String) -> Self {
-        initial_block: TimeBlock = TimeBlock::new(intial_task, start);
+        let initial_block: TimeBlock = TimeBlock::new(initial_task, start);
         return Self {
             overall_interval: Interval::new(start),
-            timeblocks: ![initial_block], 
+            timeblocks: vec![initial_block], 
             breaks: Vec::new(), 
             on_break: false, 
             time_to_do: time_to_do,
@@ -44,16 +44,15 @@ impl Day {
     }
 
     pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
-        if self.overall_interval.has_end() {
+        if self.has_ended() {
             return Err("Can't end the day because the day has already ended!");
         }
-        let block_result: Result<(), &str> = self.end_current_block_at(at);
-        match break_result {
-            Ok(_) => (),
-            Err(msg) => return Err(msg),
-        }
         self.overall_interval.end_at(at);
-        return Ok(());
+        let block_result: Result<(), &str> = self.end_current_block_at(at);
+        match block_result {
+            Ok(_) => return Ok(()),
+            Err(msg) => return Err(msg),
+        };
     }
 
     pub fn has_ended(&self) -> bool {
@@ -71,7 +70,7 @@ impl Day {
         &mut self, 
         task_name: String, 
         at: &DateTime<Local>) 
-    -> Result<TimeBlock, &str> {
+    -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't start a new block because day is already over!")
         }
@@ -81,7 +80,7 @@ impl Day {
         if self.on_break {
             self.on_break = false;
         }
-        return Ok(new_block);
+        return Ok(());
     }
 
     pub fn start_break_at(
@@ -128,7 +127,7 @@ impl Day {
     pub fn get_total_break_time(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
-            false => self.breaks.iter().map(|x: usize| self.timeblocks[x].get_length()).sum(),
+            false => self.breaks.iter().map(|x: &usize| self.timeblocks[*x].get_length()).sum(),
         };
     }
 
