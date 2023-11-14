@@ -61,7 +61,7 @@ impl Day {
     }
 
     pub fn end_current_block_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
-        self.breaks.last_mut()
+        self.timeblocks.last_mut()
             .expect("Expected there to be an ongoing block!")
             .end_at(at);
         return Ok(());
@@ -128,7 +128,7 @@ impl Day {
     pub fn get_total_break_time(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
-            false => self.breaks.iter().map(|x: &Interval| x.get_length()).sum(),
+            false => self.breaks.iter().map(|x: usize| self.timeblocks[x].get_length()).sum(),
         };
     }
 
@@ -152,7 +152,9 @@ impl Day {
 
     pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {
         let new_note: Note = Note::new(time, msg);
-        self.notes.push(new_note);
+        self.timeblocks.last_mut()
+            .expect("Expected there to be an ongoing block!")
+            .add_note(time, msg);
     }
 
     pub fn add_summary(&mut self, category: String, project: String, task: String, summary: String) {
