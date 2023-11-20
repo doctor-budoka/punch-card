@@ -31,7 +31,7 @@ pub struct Day {
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Local>, time_to_do: u64, initial_task: String) -> Self {
+    pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64) -> Self {
         let initial_block: TimeBlock = TimeBlock::new(initial_task, start);
         return Self {
             overall_interval: Interval::new(start),

@@ -113,37 +113,35 @@ fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
         println!("You've already clocked in for the day!");
     }
     else{
-        let time_to_do: u64 = get_time_to_do_for_day(other_args);
-        let new_day: Day = Day::new(&now, time_to_do);
+        let parsed_args: (String, u64) = get_other_args_for_punch_in(other_args);
+        let new_day: Day = Day::new(&now, parsed_args.0, parsed_args.1);
         println!("Clocking in for the day at '{}'", &new_day.get_day_start_as_str());
         write_day(&new_day);
     }
 }
 
-fn get_time_to_do_for_day(other_args: Vec<String>) -> u64 {
+fn get_other_args_for_punch_in(other_args: Vec<String>) -> (String, u64) {
+    let default_time_to_do: u64 = get_default_day_in_minutes();
+    println!("Using the default time to do for the day: {}", default_time_to_do);
+    let punch_in_task: String; 
     if other_args.len() == 0 {
-        let default_ttd: u64 = get_default_day_in_minutes();
-        println!("No time to do for the day provided. Using the default value ({}).", default_ttd);
-        println!("You can use `punch edit` to edit this value if this doesn't suit.");
-        return default_ttd;
+        punch_in_task = get_default_punch_in_task();
+        println!("No start task for the day provided. Using the default value.");
     }
-    let first_arg: Result<u64, std::num::ParseIntError> = other_args[0].parse::<u64>();
-    return match first_arg {
-        Ok(ttd) => {
-            println!("Time to do for today: {}", ttd);
-            ttd
-        },
-        Err(_) => {
-            let ttd: u64 = get_default_day_in_minutes();
-            println!("'{}' is not a valid value for time to do today. Using default instead ({}).", other_args[0], ttd);
-            println!("You can use `punch edit` to edit this value if this doesn't suit.");
-            ttd
-        },
-    };
+    else {
+        punch_in_task = other_args[0];
+    }
+    println!("Remember: You can use `punch edit` to change anything about the day.");
+    return (punch_in_task, default_time_to_do)
+
 }
 
 fn get_default_day_in_minutes() -> u64 {
     return get_config().day_in_minutes() as u64;
+}
+
+fn get_default_punch_in_task() -> String {
+    return get_config().default_punch_in_task.to_owned();
 }
 
 fn handle_invalid_cmd(command: &String) {
@@ -165,7 +163,7 @@ fn punch_out(now: &DateTime<Local>, mut day: Day) {
 }
 
 fn take_break(now: &DateTime<Local>, mut day: Day) {
-    let break_result: Result<(), &str> = day.start_break(&now);
+    let break_result: Result<(), &str> = day.start_break_at(&now);
     if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
         write_day(&day);
@@ -181,7 +179,7 @@ fn take_break(now: &DateTime<Local>, mut day: Day) {
 }
 
 fn resume(now: &DateTime<Local>, mut day: Day) {
-    let resume_result: Result<(), &str> = day.end_current_break_at(&now);
+    let resume_result: Result<(), &str> = day.end_current_block_at(&now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
         write_day(&day);

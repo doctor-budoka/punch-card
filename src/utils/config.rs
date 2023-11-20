@@ -40,6 +40,10 @@ impl Config {
         return self.day_in_minutes;
     }
 
+    pub fn get_default_punch_in_task(&self) -> &str {
+        return &self.default_punch_in_task;
+    }
+
     pub fn minutes_behind(&self) -> i64 {
         return self.minutes_behind;
     }
