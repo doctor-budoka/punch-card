@@ -44,6 +44,10 @@ impl Config {
         return &self.default_punch_in_task;
     }
 
+    pub fn get_default_break_task(&self) -> &str {
+        return &self.default_break_task;
+    }
+
     pub fn minutes_behind(&self) -> i64 {
         return self.minutes_behind;
     }

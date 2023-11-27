@@ -93,8 +93,8 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
 
         match command {
             SubCommand::Out(_) => punch_out(&now, day),
-            SubCommand::Pause(_) => take_break(&now, day),
-            SubCommand::Resume(_) => resume(&now, day),
+            SubCommand::Pause(other_args) => take_break(&now, other_args, day),
+            SubCommand::Resume(other_args) => resume(&now, other_args, day),
             SubCommand::Summary(_) => summary(&now, day),
             SubCommand::View(_) => view_day(day),
             SubCommand::Edit(_) => edit_day(day),
@@ -129,7 +129,7 @@ fn get_other_args_for_punch_in(other_args: Vec<String>) -> (String, u64) {
         println!("No start task for the day provided. Using the default value.");
     }
     else {
-        punch_in_task = other_args[0];
+        punch_in_task = other_args[0].to_owned();
     }
     println!("Remember: You can use `punch edit` to change anything about the day.");
     return (punch_in_task, default_time_to_do)
@@ -141,7 +141,7 @@ fn get_default_day_in_minutes() -> u64 {
 }
 
 fn get_default_punch_in_task() -> String {
-    return get_config().default_punch_in_task.to_owned();
+    return get_config().get_default_punch_in_task().to_owned();
 }
 
 fn handle_invalid_cmd(command: &String) {
@@ -162,8 +162,15 @@ fn punch_out(now: &DateTime<Local>, mut day: Day) {
     }
 }
 
-fn take_break(now: &DateTime<Local>, mut day: Day) {
-    let break_result: Result<(), &str> = day.start_break_at(&now);
+fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
+    let resolved_break_name: Result<String, &str> = get_name_for_break(other_args);
+    if let Err(msg) = resolved_break_name {
+        println!("{}", msg);
+        return
+    }
+    let break_result: Result<(), &str> = day.start_break_at(
+        resolved_break_name.expect("break_name error should already have been handled"), &now
+    );
     if let Ok(_) = break_result {
         println!("Taking a break at '{}'", &now);
         write_day(&day);
@@ -178,7 +185,16 @@ fn take_break(now: &DateTime<Local>, mut day: Day) {
     }
 }
 
-fn resume(now: &DateTime<Local>, mut day: Day) {
+fn get_name_for_break(other_args: Vec<String>) -> Result<String, &'static str> {
+    let default_break_name = get_config().get_default_break_task().to_owned();
+    return match other_args.len() {
+        0 => Ok(default_break_name),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch pause' should have at most one argument!"),
+    };
+}
+
+fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     let resume_result: Result<(), &str> = day.end_current_block_at(&now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
