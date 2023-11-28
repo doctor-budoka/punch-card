@@ -3,7 +3,7 @@ use chrono::Duration;
 use chrono::TimeZone;
 use serde::{Serialize, Deserialize};
 
-use crate::units::components::{Note, TimeBlock};
+use crate::units::components::TimeBlock;
 use crate::units::interval::{Dt,Interval, DATE_FMT, DATETIME_FMT};
 
 use crate::utils::file_io::{
@@ -150,7 +150,6 @@ impl Day {
     }
 
     pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {
-        let new_note: Note = Note::new(time, msg);
         self.timeblocks.last_mut()
             .expect("Expected there to be an ongoing block!")
             .add_note(time, msg);
