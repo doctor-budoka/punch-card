@@ -195,7 +195,19 @@ fn get_name_for_break(other_args: Vec<String>) -> Result<String, &'static str> {
 }
 
 fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
-    let resume_result: Result<(), &str> = day.end_current_block_at(&now);
+    if other_args.len() > 1 {
+        println!("'punch resume' should have at most one argument!");
+        return
+    }
+    // TODO: Make it so we can get the task from before the break as a default
+    else if other_args.len() == 0 {
+        println!("'punch resume' needs a new task name!");
+        return
+    }
+    let new_block_task: String = 
+        get_resume_task_from_args(other_args)
+        .expect("We've precluded no arguments");
+    let resume_result: Result<(), &str> = day.start_new_block(new_block_task, &now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
         write_day(&day);
@@ -206,6 +218,13 @@ fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     else {
         let msg = resume_result.unwrap_err();
         println!("{}", msg);
+    }
+}
+
+fn get_resume_task_from_args(other_args: Vec<String>) -> Option<String> {
+    return match other_args.len() {
+        0 => None,
+        _ => Some(other_args[0].to_owned()) 
     }
 }
 
