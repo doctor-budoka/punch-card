@@ -72,9 +72,9 @@ impl Day {
         at: &DateTime<Local>) 
     -> Result<(), &str> {
         if self.has_ended() {
-            return Err("Can't start a new block because day is already over!")
+            return Err("Can't start a new block because day is already over!");
         }
-        self.end_current_block_at(at);
+        self.end_current_block_at(at).expect("There should have been another block!");
         let new_block: TimeBlock = TimeBlock::new(task_name, at);
         self.timeblocks.push(new_block);
         if self.on_break {
