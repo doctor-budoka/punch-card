@@ -1,6 +1,5 @@
 use std::fmt::{self};
-use chrono::prelude::{DateTime, Local};
-use chrono::TimeZone;
+use chrono::prelude::{DateTime,Local};
 use serde::de;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
@@ -22,7 +21,7 @@ impl<'de> Visitor<'de> for DtVisitor {
     where
         E: de::Error,
     {
-        return match Local.datetime_from_str(&s, DATETIME_FMT) {
+        return match DateTime::parse_from_str(&s, DATETIME_FMT) {
             Ok(time) => Ok(Dt::new(time.with_timezone(&Local))),
             Err(_) => Err(E::custom("Incorrect format for string")),
         }

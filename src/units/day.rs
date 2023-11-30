@@ -1,6 +1,5 @@
 use chrono::prelude::{DateTime, Local};
 use chrono::Duration;
-use chrono::TimeZone;
 use serde::{Serialize, Deserialize};
 
 use crate::units::components::TimeBlock;
@@ -186,7 +185,7 @@ impl SafeFileEdit<Day, serde_yaml::Error> for Day{}
 
 #[allow(dead_code)]
 pub fn string_as_time(time_str: &String) -> DateTime<Local> {
-    let start_time: DateTime<Local> = Local.datetime_from_str(&time_str, DATETIME_FMT)
+    let start_time: DateTime<Local> = DateTime::parse_from_str(&time_str, DATETIME_FMT)
     .expect(&format!("Expected time in ISO format! Given: {}", time_str))
     .with_timezone(&Local);
     return start_time;
