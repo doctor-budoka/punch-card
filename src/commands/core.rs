@@ -1,17 +1,13 @@
-use std::env::args;
 use chrono::prelude::{DateTime, Local};
 
 use crate::utils::file_io::SafeFileEdit;
 
 use crate::units::day::{
     Day,
-    create_daily_dir_if_not_exists, 
-    get_current_day,
     read_day,
     write_day};
 
-use crate::utils::file_io::{create_base_dir_if_not_exists};
-use crate::utils::config::{Config, create_default_config_if_not_exists, get_config, update_config};
+use crate::utils::config::{Config, get_config, update_config};
 
 pub fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
     if let Ok(_) = read_day(now) {
