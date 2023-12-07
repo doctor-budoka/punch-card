@@ -4,8 +4,8 @@ use chrono::prelude::{DateTime, Local};
 mod commands;
 mod units;
 mod utils;
-use crate::units::day::Day;
-use crate::commands::core::{
+use punch::units::day::{create_daily_dir_if_not_exists,get_current_day,Day};
+use punch::commands::core::{
     punch_in, 
     punch_out, 
     take_break, 
@@ -16,10 +16,10 @@ use crate::commands::core::{
     add_summary_to_today,
     view_config,
     edit_config,
-
+    summary,
 };
-use crate::utils::file_io::{create_base_dir_if_not_exists};
-use crate::utils::config::{Config, create_default_config_if_not_exists, get_config, update_config};
+use punch::utils::file_io::{create_base_dir_if_not_exists};
+use punch::utils::config::{Config, create_default_config_if_not_exists, get_config, update_config};
 
 
 

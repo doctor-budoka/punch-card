@@ -146,7 +146,7 @@ pub fn summary(now: &DateTime<Local>, mut day: Day) {
 }
 
 
-fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
+pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
     if other_args.len() != 4 {
         println!("'punch add-summary' takes exactly 4 arguments: category, project, task and summary.")
     }
