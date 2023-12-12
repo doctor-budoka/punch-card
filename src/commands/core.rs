@@ -122,7 +122,7 @@ fn get_resume_task_from_args(other_args: Vec<String>) -> Option<String> {
     }
 }
 
-fn new_task(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
+pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
     if other_args.len() > 1 {
         println!("'punch task' should have at most one argument!");
         return

@@ -12,6 +12,7 @@ use crate::commands::core::{
     resume, 
     view_day, 
     edit_day,
+    switch_to_new_task,
     add_note_to_today,
     add_summary_to_today,
     view_config,
@@ -32,6 +33,7 @@ enum SubCommand {
     Summary(Vec<String>),
     View(Vec<String>),
     Edit(Vec<String>),
+    Task(Vec<String>),
     Note(Vec<String>),
     EditConfig(Vec<String>),
     ViewConfig(Vec<String>),
@@ -49,6 +51,7 @@ impl SubCommand {
             "summary" => Self::Summary(other_args),
             "view" => Self::View(other_args),
             "edit" => Self::Edit(other_args),
+            "task" => Self::Task(other_args),
             "note" => Self::Note(other_args),
             "edit-config" => Self::EditConfig(other_args),
             "view-config" => Self::ViewConfig(other_args),
@@ -60,7 +63,8 @@ impl SubCommand {
     fn get_allowed_strings() -> Vec<String> {
         return Vec::from(
             [
-                "in", "out", "pause", "resume", "summary", "view", "edit", "note", "edit-config", "add-summary"
+                "in", "out", "pause", "resume", "summary", "view", "edit", 
+                "task", "note", "edit-config", "add-summary"
             ].map(|x: &str| x.to_string())
         );
     }
@@ -108,6 +112,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Edit(_) => edit_day(day),
             SubCommand::EditConfig(_) => edit_config(),
             SubCommand::ViewConfig(_) => view_config(),
+            SubCommand::Task(other_args) => switch_to_new_task(&now, day, other_args),
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
