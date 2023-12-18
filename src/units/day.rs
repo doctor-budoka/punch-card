@@ -134,6 +134,23 @@ impl Day {
         return self.overall_interval.get_length() 
     }
 
+    pub fn get_task_times(&self) -> HashMap<String, i64> {
+        let current_ind: usize = self.timeblocks.len() - 1; 
+        return HashMap::from_iter(
+            self.tasks.clone().into_iter().map(
+                |(x, y): (String, Vec<usize>)| (
+                    x, 
+                    y.into_iter().filter(|i: &usize| *i != current_ind)
+                    .map(
+                        |i: usize| 
+                        self.timeblocks[i].get_length().expect("All should have length")
+                    )
+                    .sum()
+                )
+            )
+        );
+    }
+
     pub fn get_total_break_time(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
