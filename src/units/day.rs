@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use chrono::prelude::{DateTime, Local};
 use chrono::Duration;
 use serde::{Serialize, Deserialize};
@@ -23,7 +24,7 @@ pub const DAILY_DIR: &str = "days/";
 pub struct Day {
     pub overall_interval: Interval,
     pub timeblocks: Vec<TimeBlock>,
-    task_names: HashMap<String, Vec<usize>>
+    tasks: HashMap<String, Vec<usize>>,
     breaks: Vec<usize>,
     pub on_break: bool,
     pub time_to_do: u64,
@@ -36,7 +37,7 @@ impl Day {
         return Self {
             overall_interval: Interval::new(start),
             timeblocks: vec![initial_block], 
-            tasks: HashMap::from([initial_task, vec![0]]),
+            tasks: HashMap::from([(initial_task, vec![0])]),
             breaks: Vec::new(),
             on_break: false, 
             time_to_do: time_to_do,
@@ -79,8 +80,8 @@ impl Day {
         let new_block: TimeBlock = TimeBlock::new(task_name.clone(), at);
         let new_ind: usize = self.timeblocks.len();
         self.timeblocks.push(new_block);
-        if task_name in self.tasks.keys() {
-            self.tasks[task_name].append(new_ind);
+        if self.tasks.contains_key(&task_name) {
+            self.tasks.get_mut(&task_name).expect("Key exists").push(new_ind);
         }
         else {
             self.tasks.insert(task_name, vec![new_ind]);
