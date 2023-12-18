@@ -23,7 +23,8 @@ pub const DAILY_DIR: &str = "days/";
 pub struct Day {
     pub overall_interval: Interval,
     pub timeblocks: Vec<TimeBlock>,
-    pub breaks: Vec<usize>,
+    task_names: HashMap<String, Vec<usize>>
+    breaks: Vec<usize>,
     pub on_break: bool,
     pub time_to_do: u64,
     pub summaries: Vec<WorkSummary>,
@@ -31,11 +32,12 @@ pub struct Day {
 
 impl Day {
     pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64) -> Self {
-        let initial_block: TimeBlock = TimeBlock::new(initial_task, start);
+        let initial_block: TimeBlock = TimeBlock::new(initial_task.clone(), start);
         return Self {
             overall_interval: Interval::new(start),
             timeblocks: vec![initial_block], 
-            breaks: Vec::new(), 
+            tasks: HashMap::from([initial_task, vec![0]]),
+            breaks: Vec::new(),
             on_break: false, 
             time_to_do: time_to_do,
             summaries: Vec::new(),
@@ -74,8 +76,16 @@ impl Day {
             return Err("Can't start a new block because day is already over!");
         }
         self.end_current_block_at(at).expect("There should have been another block!");
-        let new_block: TimeBlock = TimeBlock::new(task_name, at);
+        let new_block: TimeBlock = TimeBlock::new(task_name.clone(), at);
+        let new_ind: usize = self.timeblocks.len();
         self.timeblocks.push(new_block);
+        if task_name in self.tasks.keys() {
+            self.tasks[task_name].append(new_ind);
+        }
+        else {
+            self.tasks.insert(task_name, vec![new_ind]);
+        }
+
         if self.on_break {
             self.on_break = false;
         }
