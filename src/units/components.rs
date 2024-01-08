@@ -34,6 +34,7 @@ impl TimeBlock {
         };
     }
 
+    #[allow(dead_code)]
     pub fn get_task_name(&self) -> String {
         return self.task_name.clone();
     }
@@ -42,10 +43,12 @@ impl TimeBlock {
         self.interval.end_at(end);
     }
 
+    #[allow(dead_code)]
     pub fn has_end(&self) -> bool {
         return self.interval.has_end();
     }
 
+    #[allow(dead_code)]
     pub fn get_start(&self) -> Dt {
         return self.interval.get_start();
     }
@@ -55,10 +58,12 @@ impl TimeBlock {
         return self.interval.get_start_as_str();
     }
 
+    #[allow(dead_code)]
     pub fn get_end(&self) -> Option<Dt> {
         return self.interval.get_end();
     }
 
+    #[allow(dead_code)]
     pub fn get_end_as_str(&self) -> Option<String> {
         return self.interval.get_end_as_str();
     }
