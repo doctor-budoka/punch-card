@@ -1,5 +1,5 @@
+use std::collections::HashMap;
 use chrono::prelude::{DateTime, Local};
-
 use crate::utils::file_io::SafeFileEdit;
 
 use crate::units::day::{
@@ -192,11 +192,16 @@ pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
 fn summarise_time(day: &Day, config: &mut Config) {
     let time_left: i64 = day.get_time_left().expect("Day is over so we should be able to calculate time left!");
     let break_time: i64 = day.get_total_break_time().expect("Day is over so we should be able to calculate total break time!");
+    let task_times: HashMap<String, i64> = day.get_task_times();
     config.update_minutes_behind(time_left);
 
     println!("Time done today: {}", day.get_time_done().unwrap());
     println!("Total time spent on break: {}", break_time);
     println!("Time left today: {}", time_left);
+    println!("Task times:");
+    for (task_name, time) in task_times.into_iter() {
+        println!("\t{}: {}", task_name, time);
+    }
     println!("Minutes behind overall: {}", config.minutes_behind());
     println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
 }
