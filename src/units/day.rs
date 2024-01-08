@@ -130,11 +130,15 @@ impl Day {
         return serde_yaml::to_string(&self).unwrap();
     }
 
-    pub fn get_day_length(&self) -> Option<i64> {
-        return self.overall_interval.get_length() 
+    pub fn get_day_length_secs(&self) -> Option<i64> {
+        return self.overall_interval.get_length_secs() 
     }
 
-    pub fn get_task_times(&self) -> HashMap<String, i64> {
+    pub fn get_day_length_mins(&self) -> Option<i64> {
+        return self.overall_interval.get_length_mins() 
+    }
+
+    pub fn get_task_times_secs(&self) -> HashMap<String, i64> {
         let current_ind: usize = self.timeblocks.len() - 1; 
         return HashMap::from_iter(
             self.tasks.clone().into_iter().map(
@@ -143,7 +147,7 @@ impl Day {
                     y.into_iter().filter(|i: &usize| *i != current_ind)
                     .map(
                         |i: usize| 
-                        self.timeblocks[i].get_length().expect("All should have length")
+                        self.timeblocks[i].get_length_secs().expect("All should have length")
                     )
                     .sum()
                 )
@@ -151,15 +155,15 @@ impl Day {
         );
     }
 
-    pub fn get_total_break_time(&self) -> Option<i64> {
+    pub fn get_total_break_time_secs(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
-            false => self.breaks.iter().map(|x: &usize| self.timeblocks[*x].get_length()).sum(),
+            false => self.breaks.iter().map(|x: &usize| self.timeblocks[*x].get_length_secs()).sum(),
         };
     }
 
-    pub fn get_time_done(&self) -> Option<i64> {
-        return match (self.get_day_length(), self.get_total_break_time()) {
+    pub fn get_time_done_secs(&self) -> Option<i64> {
+        return match (self.get_day_length_secs(), self.get_total_break_time_secs()) {
             (Some(day), Some(breaks)) => Some(day - breaks),
             (_, _) => None,
         };
@@ -169,9 +173,9 @@ impl Day {
         return self.time_to_do;
     }
 
-    pub fn get_time_left(&self) -> Option<i64> {
-        return match self.get_time_done() {
-            Some(td) => Some(self.get_time_to_do() as i64 - td),
+    pub fn get_time_left_secs(&self) -> Option<i64> {
+        return match self.get_time_done_secs() {
+            Some(td) => Some((self.get_time_to_do() * 60) as i64 - td),
             None => None,
         }
     }

@@ -78,8 +78,12 @@ impl TimeBlock {
         return serde_yaml::from_str(yaml_str).unwrap();
     }
 
-    pub fn get_length(&self) -> Option<i64> {
-        return self.interval.get_length();
+    pub fn get_length_secs(&self) -> Option<i64> {
+        return self.interval.get_length_secs();
+    }
+
+    pub fn get_length_mins(&self) -> Option<i64> {
+        return self.interval.get_length_mins();
     }
 
     pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {

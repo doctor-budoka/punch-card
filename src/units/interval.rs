@@ -133,10 +133,17 @@ impl Interval {
         return serde_yaml::from_str(yaml_str).unwrap();
     }
 
-    pub fn get_length(&self) -> Option<i64> {
+    pub fn get_length_secs(&self) -> Option<i64> {
         return match self.get_end() {
-            Some(end_time) => Some((end_time.0 - self.start.0).num_minutes()),
+            Some(end_time) => Some((end_time.0 - self.start.0).num_seconds()),
             None => None, 
         }
+    }
+
+    pub fn get_length_mins(&self) -> Option<i64> {
+        return match self.get_length_secs() {
+            Some(secs) => Some(secs / 60),
+            None => None,
+        };
     }
 }
