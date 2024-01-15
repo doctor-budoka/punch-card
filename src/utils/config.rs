@@ -4,18 +4,29 @@ use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR, FromStrin
 
 pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
+const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
+const DEFAULT_BREAK_TASK: &str = "Break";
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Config {
     day_in_minutes: i64,
+    default_punch_in_task: String,
+    default_break_task: String,
     minutes_behind: i64,
     minutes_behind_non_neg: u64,
 }
 
 impl Config {
-    pub fn new(day_length: i64, minutes_behind: i64) -> Self {
+    pub fn new(
+        day_length: i64, 
+        default_punch_in_task: String, 
+        default_break_task: String, 
+        minutes_behind: i64) 
+    -> Self {
         return Self {
             day_in_minutes: day_length, 
+            default_punch_in_task: default_punch_in_task,
+            default_break_task: default_break_task,
             minutes_behind: minutes_behind,
             minutes_behind_non_neg: if minutes_behind < 0 {0} else {minutes_behind} as u64,
         }
@@ -27,6 +38,14 @@ impl Config {
 
     pub fn day_in_minutes(&self) -> i64 {
         return self.day_in_minutes;
+    }
+
+    pub fn get_default_punch_in_task(&self) -> &str {
+        return &self.default_punch_in_task;
+    }
+
+    pub fn get_default_break_task(&self) -> &str {
+        return &self.default_break_task;
     }
 
     pub fn minutes_behind(&self) -> i64 {
@@ -81,7 +100,11 @@ pub fn read_config(path: &String) -> Config {
 pub fn create_default_config_if_not_exists() {
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
     if !Path::new(&config_path).exists() {
-        let default_config: Config = Config::new(DEFAULT_TIME_MINS, 0);
+        let default_config: Config = Config::new(
+            DEFAULT_TIME_MINS, 
+            DEFAULT_PUNCH_IN_TASK.to_owned(),
+            DEFAULT_BREAK_TASK.to_owned(),
+            0);
         write_config(&config_path, &default_config);
     }
 }
