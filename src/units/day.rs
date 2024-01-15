@@ -122,7 +122,10 @@ impl Day {
     }
 
     pub fn get_day_end_as_str(&self) -> Option<String> {
-        return self.get_day_end().get_end_as_str();
+        return match self.get_day_end() {
+            Some(dt) => Some(dt.as_string()),
+            None => None,
+        };
     }
 
     pub fn as_string(&self) -> String {
@@ -133,6 +136,7 @@ impl Day {
         return self.overall_interval.get_length_secs() 
     }
 
+    #[allow(dead_code)]
     pub fn get_day_length_mins(&self) -> Option<i64> {
         return self.overall_interval.get_length_mins() 
     }

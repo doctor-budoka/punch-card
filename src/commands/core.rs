@@ -51,7 +51,7 @@ pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
         write_day(&day);
-        update_time_behind(day):
+        update_time_behind(day);
     }
     else {
         println!("Can't punch out: Already punched out for the day!");
