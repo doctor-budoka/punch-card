@@ -23,11 +23,13 @@ pub fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
 
 fn get_other_args_for_punch_in(other_args: Vec<String>) -> (String, u64) {
     let default_time_to_do: u64 = get_default_day_in_minutes();
-    println!("Using the default time to do for the day: {}", default_time_to_do);
+    println!("Using the default time to do for the day: {} minutes", default_time_to_do);
     let punch_in_task: String; 
     if other_args.len() == 0 {
         punch_in_task = get_default_punch_in_task();
-        println!("No start task for the day provided. Using the default value.");
+        println!(
+            "No start task for the day provided. Using the default value: '{}'", 
+            punch_in_task);
     }
     else {
         punch_in_task = other_args[0].to_owned();
@@ -49,10 +51,10 @@ pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
         write_day(&day);
-        update_time_behind(day)
+        update_time_behind(day):
     }
     else {
-        println!("Can't punch out: Already punched out for the day!")
+        println!("Can't punch out: Already punched out for the day!");
     }
 }
 
@@ -93,7 +95,6 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
         println!("'punch resume' should have at most one argument!");
         return
     }
-    // TODO: Make it so we can get the task from before the break as a default
     else if other_args.len() == 0 {
         println!("'punch resume' needs a new task name!");
         return
