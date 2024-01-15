@@ -76,7 +76,7 @@ impl Day {
         if self.has_ended() {
             return Err("Can't start a new block because day is already over!");
         }
-        self.end_current_block_at(at).expect("There should have been another block!");
+        self.end_current_block_at(at).expect("There should have been an existing block!");
         let new_block: TimeBlock = TimeBlock::new(task_name.clone(), at);
         let new_ind: usize = self.timeblocks.len();
         self.timeblocks.push(new_block);
@@ -117,13 +117,12 @@ impl Day {
         return self.get_day_start().as_string();
     }
 
-    #[allow(dead_code)]
     pub fn get_day_end(&self) -> Option<Dt> {
         return self.overall_interval.get_end();
     }
 
     pub fn get_day_end_as_str(&self) -> Option<String> {
-        return self.overall_interval.get_end_as_str();
+        return self.get_day_end().get_end_as_str();
     }
 
     pub fn as_string(&self) -> String {
