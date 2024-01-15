@@ -124,17 +124,13 @@ fn get_resume_task_from_args(other_args: Vec<String>) -> Option<String> {
 }
 
 pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
-    if other_args.len() > 1 {
-        println!("'punch task' should have at most one argument!");
+    let new_block_task_result: Result<String, String> = get_new_task_block_from_args(other_args);
+    if let Err(msg) = new_block_task_result {
+        println!("{}", msg);
         return
-    }
-    else if other_args.len() == 0 {
-        println!("'punch task' needs a new task name!");
-        return
-    }
-    let new_block_task: String = 
-        get_new_task_block_from_args(other_args)
-        .expect("We've precluded no arguments");
+    } 
+
+    let new_block_task: String = new_block_task_result.expect("We've handled errors");
     let result: Result<(), &str> = day.start_new_block(new_block_task.to_owned(), &now);
     if let Ok(_) = result {
         println!("Now working on '{}' from '{}'", &new_block_task, &now);
@@ -149,11 +145,12 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
     }
 }
 
-fn get_new_task_block_from_args(other_args: Vec<String>) -> Option<String> {
+fn get_new_task_block_from_args(other_args: Vec<String>) -> Result<String, String> {
     return match other_args.len() {
-        0 => None,
-        _ => Some(other_args[0].to_owned()) 
-    }
+        0 => Err("'punch task' needs a new task name!".to_string()),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch task' should have at most one argument!".to_string()),
+    };
 }
 
 pub fn view_day(day: Day) {
