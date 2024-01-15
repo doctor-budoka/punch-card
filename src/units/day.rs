@@ -102,9 +102,9 @@ impl Day {
             return Err("Can't start a break because day is already on break");
         }
         else {
-            self.on_break = true;
             self.start_new_block(break_name, at).expect("Should be able to start a new block!");
             self.breaks.push(self.timeblocks.len() - 1);
+            self.on_break = true;
             return Ok(());
         }
     }
