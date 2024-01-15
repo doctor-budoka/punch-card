@@ -91,17 +91,13 @@ pub fn get_name_for_break(other_args: Vec<String>) -> Result<String, &'static st
 }
 
 pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
-    if other_args.len() > 1 {
-        println!("'punch resume' should have at most one argument!");
+    let new_block_task_result: Result<String, String> = get_resume_task_from_args(other_args);
+    if let Err(msg) = new_block_task_result {
+        println!("{}", msg);
         return
     }
-    else if other_args.len() == 0 {
-        println!("'punch resume' needs a new task name!");
-        return
-    }
-    let new_block_task: String = 
-        get_resume_task_from_args(other_args)
-        .expect("We've precluded no arguments");
+
+    let new_block_task: String = new_block_task_result.expect("We've precluded no arguments");
     let resume_result: Result<(), &str> = day.start_new_block(new_block_task, &now);
     if let Ok(_) = resume_result {
         println!("Back to work at '{}'", &now);
@@ -116,10 +112,11 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     }
 }
 
-fn get_resume_task_from_args(other_args: Vec<String>) -> Option<String> {
+fn get_resume_task_from_args(other_args: Vec<String>) -> Result<String, String> {
     return match other_args.len() {
-        0 => None,
-        _ => Some(other_args[0].to_owned()) 
+        0 => Err("'punch resume' needs a new task name!".to_string()),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch resume' should have at most one argument!".to_string()),
     }
 }
 
