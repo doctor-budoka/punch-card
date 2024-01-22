@@ -147,10 +147,10 @@ impl Day {
             self.tasks.clone().into_iter().map(
                 |(x, y): (String, Vec<usize>)| (
                     x, 
-                    y.into_iter().filter(|i: &usize| *i != current_ind)
+                    y.into_iter()
                     .map(
                         |i: usize| 
-                        self.timeblocks[i].get_length_secs().expect("All should have length")
+                        self.timeblocks[i].get_length_secs().unwrap_or_else(0)
                     )
                     .sum()
                 )
