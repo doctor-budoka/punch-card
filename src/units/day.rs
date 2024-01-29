@@ -121,6 +121,18 @@ impl Day {
         return self.overall_interval.get_end();
     }
 
+    pub fn get_task_name(&self, ind: isize) -> String {
+        let out_ind: usize;
+        if ind < 0 {
+            let size: usize = self.timeblocks.len();
+            out_ind = ((size as isize) + ind) as usize;
+        }
+        else {
+            out_ind = ind as usize;
+        }
+        return self.timeblocks[out_ind].get_task_name();
+    }
+
     pub fn get_day_end_as_str(&self) -> Option<String> {
         return match self.get_day_end() {
             Some(dt) => Some(dt.as_string()),
