@@ -65,6 +65,7 @@ impl Day {
         self.timeblocks.last_mut()
             .expect("Expected there to be an ongoing block!")
             .end_at(at);
+        
         return Ok(());
     }
 
@@ -86,10 +87,7 @@ impl Day {
         else {
             self.tasks.insert(task_name, vec![new_ind]);
         }
-
-        if self.on_break {
-            self.on_break = false;
-        }
+        self.on_break = false;
         return Ok(());
     }
 
