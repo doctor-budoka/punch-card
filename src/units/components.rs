@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::units::interval::{Dt,Interval};
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug,Serialize,Deserialize,Clone)]
 pub struct Note {
     time: Dt,
     msg: String,
@@ -18,7 +18,7 @@ impl Note {
     }
 }
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug,Serialize,Deserialize,Clone)]
 pub struct TimeBlock {
     task_name: String,
     interval: Interval,

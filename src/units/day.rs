@@ -20,7 +20,7 @@ use crate::utils::work_summary::WorkSummary;
 pub const DAILY_DIR: &str = "days/";
 
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug,Serialize,Deserialize,Clone)]
 pub struct Day {
     pub overall_interval: Interval,
     pub timeblocks: Vec<TimeBlock>,
@@ -154,7 +154,6 @@ impl Day {
     }
 
     pub fn get_task_times_secs(&self) -> HashMap<String, i64> {
-        let current_ind: usize = self.timeblocks.len() - 1; 
         return HashMap::from_iter(
             self.tasks.clone().into_iter().map(
                 |(x, y): (String, Vec<usize>)| (
@@ -162,7 +161,7 @@ impl Day {
                     y.into_iter()
                     .map(
                         |i: usize| 
-                        self.timeblocks[i].get_length_secs().unwrap_or_else(0)
+                        self.timeblocks[i].get_length_secs().unwrap_or(0)
                     )
                     .sum()
                 )

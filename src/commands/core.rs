@@ -91,7 +91,8 @@ pub fn get_name_for_break(other_args: Vec<String>) -> Result<String, &'static st
 }
 
 pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
-    let new_block_task_result: Result<String, String> = get_resume_task_from_args(other_args);
+    let new_block_task_result: Result<String, String> = get_resume_task_from_args(
+        other_args, day.clone());
     if let Err(msg) = new_block_task_result {
         println!("{}", msg);
         return
@@ -112,9 +113,9 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     }
 }
 
-fn get_resume_task_from_args(other_args: Vec<String>) -> Result<String, String> {
+fn get_resume_task_from_args(other_args: Vec<String>, day: Day) -> Result<String, String> {
     return match other_args.len() {
-        0 => Err("'punch resume' needs a new task name!".to_string()),
+        0 => Ok(day.get_task_name(-2)),
         1 => Ok(other_args[0].to_owned()),
         _ => Err("'punch resume' should have at most one argument!".to_string()),
     }
