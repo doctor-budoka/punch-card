@@ -145,9 +145,9 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
 
 fn get_new_task_block_from_args(other_args: Vec<String>) -> Result<String, String> {
     return match other_args.len() {
-        0 => Err("'punch task' needs a new task name!".to_string()),
+        0 => Err("'punch update-task' needs a new task name!".to_string()),
         1 => Ok(other_args[0].to_owned()),
-        _ => Err("'punch task' should have at most one argument!".to_string()),
+        _ => Err("'punch update-task' should have at most one argument!".to_string()),
     };
 }
 
