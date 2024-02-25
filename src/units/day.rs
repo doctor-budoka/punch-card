@@ -69,6 +69,10 @@ impl Day {
         return Ok(());
     }
 
+    pub fn get_latest_task_name(& self) -> String {
+        return self.get_task_name(-1);
+    }
+
     pub fn start_new_block(
         &mut self, 
         task_name: String, 

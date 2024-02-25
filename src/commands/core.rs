@@ -195,6 +195,7 @@ fn summarise_time(day: &Day, config: &mut Config) {
     println!("Time done today: {} m {} s", time_done_secs / 60, time_done_secs % 60);
     println!("Total time spent on break: {} m {} s", break_time / 60, break_time % 60);
     println!("Time left today: {} m {} s", time_left / 60, time_left % 60);
+    println!("Latest task: {}", day.get_latest_task_name());
     println!("Task times:");
     for (task_name, time) in task_times.into_iter() {
         println!("\t{}: {} m {} s", task_name, time / 60, time % 60);
