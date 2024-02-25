@@ -69,6 +69,39 @@ impl Day {
         return Ok(());
     }
 
+    pub fn get_latest_task_name(& self) -> String {
+        return self.get_task_name(-1);
+    }
+
+    pub fn update_current_task_name(&mut self, new_task: String) -> Result<(), &str> {
+        if self.on_break {
+            return Err("Can't update current task while on a break!")
+        }
+        let current_name: String = self.get_latest_task_name();
+        let current_ind: usize = self.timeblocks.len() - 1;
+        
+        // Remove current_ind from current_name
+        if self.tasks.get(&current_name).expect("Key exists").len() == 1 {
+            self.tasks.remove(&current_name);
+        }
+        else {
+            self.tasks.get_mut(&current_name).expect("Key exists").pop();
+        }
+        
+        // Add current_ind to new task
+        if self.tasks.contains_key(&new_task) {
+            self.tasks.get_mut(&new_task).expect("Key exists").push(current_ind);
+        }
+        else {
+            self.tasks.insert(new_task.clone(), vec![current_ind]);
+        }
+
+        let update_result: Result<(), &str> = self.timeblocks.last_mut()
+            .expect("Expected there to be an ongoing block!")
+            .update_task_name(new_task);
+        return update_result;
+    }
+
     pub fn start_new_block(
         &mut self, 
         task_name: String, 

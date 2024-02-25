@@ -195,6 +195,7 @@ fn summarise_time(day: &Day, config: &mut Config) {
     println!("Time done today: {} m {} s", time_done_secs / 60, time_done_secs % 60);
     println!("Total time spent on break: {} m {} s", break_time / 60, break_time % 60);
     println!("Time left today: {} m {} s", time_left / 60, time_left % 60);
+    println!("Latest task: '{}'", day.get_latest_task_name());
     println!("Task times:");
     for (task_name, time) in task_times.into_iter() {
         println!("\t{}: {} m {} s", task_name, time / 60, time % 60);
@@ -239,4 +240,35 @@ pub fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<St
         write_day(&day);
         println!("New note '{}' added to today at '{}'.", msg, now);
     }
+}
+
+pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
+    let task_name_result: Result<String, String> = get_new_task_name_from_args(other_args);
+    if let Err(msg) = task_name_result {
+        println!("{}", msg);
+        return
+    }
+    let task_name = task_name_result.expect("Error already handled!");
+    let change_task_result: Result<(), &str> = day.update_current_task_name(task_name.clone());
+    
+    if let Ok(_) = change_task_result {
+        println!("Updated the current task to '{}'", &task_name);
+        write_day(&day);
+        if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
+        let mut config: Config = get_config();
+        summarise_time(&day, &mut config);
+    }
+    else {
+        let msg = change_task_result.unwrap_err();
+        println!("{}", msg);
+        return
+    }
+}
+
+fn get_new_task_name_from_args(other_args: Vec<String>) -> Result<String, String> {
+    return match other_args.len() {
+        0 => Err("'punch update-task' needs a new task name!".to_string()),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch update-task' should have at most one argument!".to_string()),
+    };
 }

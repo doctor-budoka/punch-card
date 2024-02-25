@@ -39,6 +39,11 @@ impl TimeBlock {
         return self.task_name.clone();
     }
 
+    pub fn update_task_name(&mut self, new_task: String) -> Result<(), &str> {
+        self.task_name = new_task;
+        return Ok(());
+    }
+
     pub fn end_at(&mut self, end: &DateTime<Local>) {
         self.interval.end_at(end);
     }
