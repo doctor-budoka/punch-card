@@ -23,6 +23,7 @@ use crate::commands::core::{
 use crate::utils::file_io::{create_base_dir_if_not_exists};
 use crate::utils::config::{create_default_config_if_not_exists};
 
+const VERSION: &str = "2.2.0";
 
 
 #[derive(PartialEq)]
@@ -40,6 +41,7 @@ enum SubCommand {
     ViewConfig(Vec<String>),
     AddSummary(Vec<String>),
     UpdateTask(Vec<String>),
+    Version(Vec<String>),
     Invalid(String),
 }
 
@@ -59,6 +61,7 @@ impl SubCommand {
             "view-config" => Self::ViewConfig(other_args),
             "add-summary" => Self::AddSummary(other_args),
             "update-task" => Self::UpdateTask(other_args),
+            "version" | "-v" | "--version" => Self::Version(other_args),
             other => Self::Invalid(other.to_string()),
         }
     }
@@ -67,7 +70,8 @@ impl SubCommand {
         return Vec::from(
             [
                 "in", "out", "pause", "resume", "summary", "view", "edit", 
-                "task", "note", "edit-config", "add-summary", "update-task"
+                "task", "note", "edit-config", "add-summary", "update-task",
+                "version", "-v", "--version"
             ].map(|x: &str| x.to_string())
         );
     }
@@ -119,6 +123,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
             SubCommand::UpdateTask(other_args) => update_current_task_name(&now, day, other_args),
+            SubCommand::Version(_) => {println!("Current punch-card version: {}", VERSION);},
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
