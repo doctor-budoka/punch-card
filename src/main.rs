@@ -99,6 +99,9 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     if let SubCommand::In(other_args) = command {
         punch_in(&now, other_args);
     }
+    else if let SubCommand::Version(_other_args) = command {
+        println!("Current punch-card version: {}", VERSION);
+    }
     else if let SubCommand::Invalid(original) = command {
         handle_invalid_cmd(&original);
     }
@@ -123,7 +126,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
             SubCommand::UpdateTask(other_args) => update_current_task_name(&now, day, other_args),
-            SubCommand::Version(_) => {println!("Current punch-card version: {}", VERSION);},
+            SubCommand::Version(_) => unreachable!("`punch version/--version/-v` commands should already be processed."),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
