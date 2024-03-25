@@ -23,7 +23,7 @@ use crate::commands::core::{
 use crate::utils::file_io::{create_base_dir_if_not_exists};
 use crate::utils::config::{create_default_config_if_not_exists};
 
-const VERSION: &str = "2.2.0";
+const VERSION: &str = "2.2.2";
 
 
 #[derive(PartialEq)]
