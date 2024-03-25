@@ -1,4 +1,4 @@
-use std::fs::{File, OpenOptions, create_dir_all,read_to_string};
+use std::fs::{File, OpenOptions, create_dir_all, read_to_string, remove_file};
 use std::io::Write;
 use std::path::Path;
 use std::env::var;
@@ -6,8 +6,14 @@ use std::env::var;
 pub const BASE_DIR: &str = "~/.punch-card/";
 
 pub fn write_file(path: &str, contents: String) {
-    let path_to_write: String = expand_path(path);
-    let file_result: Result<File, std::io::Error> = OpenOptions::new().create(true).write(true).open(path_to_write);
+    let path_str_to_write: String = expand_path(path);
+    let path_to_write: &Path = Path::new(&path_str_to_write); 
+    if path_to_write.exists() {
+        remove_file(path_str_to_write.clone()).expect("Should be able to delete");
+    }
+    let file_result: Result<File, std::io::Error> = OpenOptions::new()
+        .create(true).write(true)
+        .open(path_str_to_write);
     if let Ok(mut file) = file_result {
         file.write_all(contents.as_bytes()).expect("Couldn't write to file!");
     }
