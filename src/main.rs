@@ -1,4 +1,5 @@
 use std::env::args;
+use std::process::exit;
 use chrono::prelude::{DateTime, Local};
 
 mod commands;
@@ -108,8 +109,8 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     else {
         let possible_day: Result<Day, String> = get_current_day(&now);
         if let Err(msg) = possible_day {
-            println!("{}", msg);
-            return
+            eprintln!("{}", msg);
+            exit(1);
         }
         let day: Day = possible_day.unwrap();
 
@@ -134,8 +135,9 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
 }
 
 fn handle_invalid_cmd(command: &String) {
-    println!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
+    eprintln!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
     for str_subcommand in SubCommand::get_allowed_strings() {
-        println!("\t{}", str_subcommand);
+        eprintln!("\t{}", str_subcommand);
     }
+    exit(1);
 }

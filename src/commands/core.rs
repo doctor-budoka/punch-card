@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::process::exit;
 use chrono::prelude::{DateTime, Local};
 use crate::utils::file_io::SafeFileEdit;
 
@@ -61,8 +62,8 @@ pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
 pub fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     let resolved_break_name: Result<String, &str> = get_name_for_break(other_args);
     if let Err(msg) = resolved_break_name {
-        println!("{}", msg);
-        return
+        eprintln!("{}", msg);
+        exit(1);
     }
     let break_result: Result<(), &str> = day.start_break_at(
         resolved_break_name.expect("break_name error should already have been handled"), &now
@@ -77,7 +78,8 @@ pub fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) 
     }
     else {
         let msg = break_result.unwrap_err();
-        println!("{}", msg);
+        eprintln!("{}", msg);
+        exit(1);
     }
 }
 
@@ -94,8 +96,8 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     let new_block_task_result: Result<String, String> = get_resume_task_from_args(
         other_args, day.clone());
     if let Err(msg) = new_block_task_result {
-        println!("{}", msg);
-        return
+        eprintln!("{}", msg);
+        exit(1);
     }
 
     let new_block_task: String = new_block_task_result.expect("We've precluded no arguments");
@@ -109,7 +111,8 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
     }
     else {
         let msg = resume_result.unwrap_err();
-        println!("{}", msg);
+        eprintln!("{}", msg);
+        exit(1);
     }
 }
 
@@ -124,8 +127,8 @@ fn get_resume_task_from_args(other_args: Vec<String>, day: Day) -> Result<String
 pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
     let new_block_task_result: Result<String, String> = get_new_task_block_from_args(other_args);
     if let Err(msg) = new_block_task_result {
-        println!("{}", msg);
-        return
+        eprintln!("{}", msg);
+        exit(1);
     } 
 
     let new_block_task: String = new_block_task_result.expect("We've handled errors");
@@ -139,7 +142,8 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
     }
     else {
         let msg = result.unwrap_err();
-        println!("{}", msg);
+        eprintln!("{}", msg);
+        exit(1);
     }
 }
 
@@ -229,10 +233,12 @@ pub fn edit_config() {
 
 pub fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
     if other_args.len() == 0 {
-        println!("'punch note' requires a msg argument!")
+        eprintln!("'punch note' requires a msg argument!");
+        exit(1);
     }
     else if other_args.len() > 1 {
-        println!("'punch note' takes a single argument. Consider wrapping your message in quotes.")
+        eprintln!("'punch note' takes a single argument. Consider wrapping your message in quotes.");
+        exit(1);
     }
     else {
         let msg: String = (&other_args[0]).to_string();
@@ -245,8 +251,8 @@ pub fn add_note_to_today(now: &DateTime<Local>, mut day: Day, other_args: Vec<St
 pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
     let task_name_result: Result<String, String> = get_new_task_name_from_args(other_args);
     if let Err(msg) = task_name_result {
-        println!("{}", msg);
-        return
+        eprintln!("{}", msg);
+        exit(1);
     }
     let task_name = task_name_result.expect("Error already handled!");
     let change_task_result: Result<(), &str> = day.update_current_task_name(task_name.clone());
@@ -260,8 +266,8 @@ pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args:
     }
     else {
         let msg = change_task_result.unwrap_err();
-        println!("{}", msg);
-        return
+        eprintln!("{}", msg);
+        exit(1);
     }
 }
 
