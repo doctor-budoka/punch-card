@@ -1,4 +1,5 @@
 use std::env::args;
+use std::process::exit;
 use chrono::prelude::{DateTime, Local};
 
 mod commands;
@@ -23,7 +24,7 @@ use crate::commands::core::{
 use crate::utils::file_io::{create_base_dir_if_not_exists};
 use crate::utils::config::{create_default_config_if_not_exists};
 
-const VERSION: &str = "2.2.0";
+const VERSION: &str = "2.2.2";
 
 
 #[derive(PartialEq)]
@@ -99,14 +100,17 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     if let SubCommand::In(other_args) = command {
         punch_in(&now, other_args);
     }
+    else if let SubCommand::Version(_other_args) = command {
+        println!("Current punch-card version: {}", VERSION);
+    }
     else if let SubCommand::Invalid(original) = command {
         handle_invalid_cmd(&original);
     }
     else {
         let possible_day: Result<Day, String> = get_current_day(&now);
         if let Err(msg) = possible_day {
-            println!("{}", msg);
-            return
+            eprintln!("{}", msg);
+            exit(1);
         }
         let day: Day = possible_day.unwrap();
 
@@ -123,7 +127,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
             SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
             SubCommand::UpdateTask(other_args) => update_current_task_name(&now, day, other_args),
-            SubCommand::Version(_) => {println!("Current punch-card version: {}", VERSION);},
+            SubCommand::Version(_) => unreachable!("`punch version/--version/-v` commands should already be processed."),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
         }
@@ -131,8 +135,9 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
 }
 
 fn handle_invalid_cmd(command: &String) {
-    println!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
+    eprintln!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
     for str_subcommand in SubCommand::get_allowed_strings() {
-        println!("\t{}", str_subcommand);
+        eprintln!("\t{}", str_subcommand);
     }
+    exit(1);
 }
