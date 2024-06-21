@@ -199,7 +199,7 @@ impl Day {
         );
     }
 
-    pub fn get_task_times_and_blocks_secs(&self) -> HashMap<String, (i64, u64)> {
+    pub fn get_task_times_secs_and_num_blocks(&self) -> HashMap<String, (i64, u64)> {
         return HashMap::from_iter(
             self.tasks.clone().into_iter().map(
                 |(x, y): (String, Vec<usize>)| (

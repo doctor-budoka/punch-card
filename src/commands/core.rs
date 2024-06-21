@@ -192,7 +192,7 @@ pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
 fn summarise_time(day: &Day, config: &mut Config) {
     let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should be able to calculate time left!");
     let break_time: i64 = day.get_total_break_time_secs().expect("Day is over so we should be able to calculate total break time!");
-    let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_and_blocks_secs();
+    let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();
     let total_blocks: u64 = day.get_total_timeblocks();
     let total_blocks_without_breaks: u64 = day.get_total_timeblocks_without_breaks();
     config.update_minutes_behind(time_left / 60);
