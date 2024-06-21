@@ -199,6 +199,25 @@ impl Day {
         );
     }
 
+    pub fn get_task_times_secs_and_num_blocks(&self) -> HashMap<String, (i64, u64)> {
+        return HashMap::from_iter(
+            self.tasks.clone().into_iter().map(
+                |(x, y): (String, Vec<usize>)| (
+                    x, 
+                    (
+                        y.clone().into_iter()
+                        .map(
+                            |i: usize| 
+                            self.timeblocks[i].get_length_secs().unwrap_or(0)
+                        )
+                        .sum(),
+                        y.len() as u64
+                    )
+                )
+            )
+        );
+    }
+
     pub fn get_total_break_time_secs(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
@@ -233,6 +252,14 @@ impl Day {
     pub fn add_summary(&mut self, category: String, project: String, task: String, summary: String) {
         let summary: WorkSummary = WorkSummary::new(category, project, task, summary);
         self.summaries.push(summary);
+    }
+
+    pub fn get_total_timeblocks(&self) -> u64 {
+        return self.timeblocks.len() as u64;
+    }
+
+    pub fn get_total_timeblocks_without_breaks(&self) -> u64 {
+        return self.get_total_timeblocks() - (self.breaks.len() as u64);
     }
 }
 

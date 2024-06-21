@@ -192,17 +192,21 @@ pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
 fn summarise_time(day: &Day, config: &mut Config) {
     let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should be able to calculate time left!");
     let break_time: i64 = day.get_total_break_time_secs().expect("Day is over so we should be able to calculate total break time!");
-    let task_times: HashMap<String, i64> = day.get_task_times_secs();
+    let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();
+    let total_blocks: u64 = day.get_total_timeblocks();
+    let total_blocks_without_breaks: u64 = day.get_total_timeblocks_without_breaks();
     config.update_minutes_behind(time_left / 60);
 
     let time_done_secs = day.get_time_done_secs().unwrap();
     println!("Time done today: {} m {} s", time_done_secs / 60, time_done_secs % 60);
     println!("Total time spent on break: {} m {} s", break_time / 60, break_time % 60);
     println!("Time left today: {} m {} s", time_left / 60, time_left % 60);
+    println!("Total task blocks (including breaks): {}", total_blocks);
+    println!("Total task blocks (excluding breaks): {}", total_blocks_without_breaks);
     println!("Latest task: '{}'", day.get_latest_task_name());
-    println!("Task times:");
-    for (task_name, time) in task_times.into_iter() {
-        println!("\t{}: {} m {} s", task_name, time / 60, time % 60);
+    println!("Task times, blocks:");
+    for (task_name, (time, blocks)) in task_summaries.into_iter() {
+        println!("\t{}: {} m {} s, {} blocks", task_name, time / 60, time % 60, blocks);
     }
     println!("Minutes behind overall: {}", config.minutes_behind());
     println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
