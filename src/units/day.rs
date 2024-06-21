@@ -199,6 +199,25 @@ impl Day {
         );
     }
 
+    pub fn get_task_times_and_blocks_secs(&self) -> HashMap<String, (i64, u64)> {
+        return HashMap::from_iter(
+            self.tasks.clone().into_iter().map(
+                |(x, y): (String, Vec<usize>)| (
+                    x, 
+                    (
+                        y.clone().into_iter()
+                        .map(
+                            |i: usize| 
+                            self.timeblocks[i].get_length_secs().unwrap_or(0)
+                        )
+                        .sum(),
+                        y.len() as u64
+                    )
+                )
+            )
+        );
+    }
+
     pub fn get_total_break_time_secs(&self) -> Option<i64> {
         return match self.on_break {
             true => None,
