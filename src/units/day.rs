@@ -234,6 +234,14 @@ impl Day {
         let summary: WorkSummary = WorkSummary::new(category, project, task, summary);
         self.summaries.push(summary);
     }
+
+    pub fn get_total_timeblocks(&self) -> u64 {
+        return self.timeblocks.len() as u64;
+    }
+
+    pub fn get_total_timeblocks_without_breaks(&self) -> u64 {
+        return self.get_total_timeblocks() - (self.breaks.len() as u64);
+    }
 }
 
 impl FromString<Day, serde_yaml::Error> for Day {
