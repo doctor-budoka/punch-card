@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap,HashSet};
 use chrono::prelude::{DateTime, Local};
 use chrono::Duration;
 use serde::{Serialize, Deserialize};
@@ -260,6 +260,13 @@ impl Day {
 
     pub fn get_total_timeblocks_without_breaks(&self) -> u64 {
         return self.get_total_timeblocks() - (self.breaks.len() as u64);
+    }
+
+    pub fn get_tasks_in_chronological_order(&self) -> Vec<String> {
+        let task_set = HashSet::new();
+        let task_name_vec: Vec<String> =  self.timeblocks.into_iter().map(|x| x.get_task_name()).collect();
+        task_name_vec.retain(|&x| task_set.insert(x));
+        return task_name_vec;
     }
 }
 
