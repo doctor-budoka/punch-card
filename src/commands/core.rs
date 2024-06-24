@@ -205,7 +205,8 @@ fn summarise_time(day: &Day, config: &mut Config) {
     println!("Total task blocks (excluding breaks): {}", total_blocks_without_breaks);
     println!("Latest task: '{}'", day.get_latest_task_name());
     println!("Task times, blocks:");
-    for (task_name, (time, blocks)) in task_summaries.into_iter() {
+    for task_name in day.get_tasks_in_chronological_order() {
+        let (time, blocks) = task_summaries.get(&task_name).unwrap();
         println!("\t{}: {} m {} s, {} blocks", task_name, time / 60, time % 60, blocks);
     }
     println!("Minutes behind overall: {}", config.minutes_behind());
