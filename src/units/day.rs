@@ -263,9 +263,9 @@ impl Day {
     }
 
     pub fn get_tasks_in_chronological_order(&self) -> Vec<String> {
-        let task_set = HashSet::new();
-        let task_name_vec: Vec<String> =  self.timeblocks.into_iter().map(|x| x.get_task_name()).collect();
-        task_name_vec.retain(|&x| task_set.insert(x));
+        let mut task_set = HashSet::new();
+        let mut task_name_vec: Vec<String> =  self.timeblocks.clone().into_iter().map(|x| x.get_task_name()).collect();
+        task_name_vec.retain(|x| task_set.insert(x.clone()));
         return task_name_vec;
     }
 }
