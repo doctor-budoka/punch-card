@@ -28,7 +28,7 @@ The config file will be stored at `~/.punch-card/punch.cfg`. This stores the len
 At the moment, the only way to install is to build the program locally. You'll need to have Rust and Cargo installed as well as Vim. In addition, this has only been tested on a Mac (though it should work on Linux and Windows too, with different instructions).
 
 1. Clone this repository to your computer.
-2. Run 'cargo build -- release'. The executable will then appear in `/target/release/punch`
+2. Run 'cargo build --release'. The executable will then appear in `/target/release/punch`
 3. Copy it to somewhere on your PATH
 
 Alternatively, you can run the included `install.sh` after you have cloned your repository, provided you have a `/usr/local/bin/` directory. You will also need to add `usr/local/bin/` to your PATH if it hasn't been added already.
