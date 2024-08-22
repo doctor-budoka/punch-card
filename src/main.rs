@@ -7,11 +7,11 @@ mod units;
 mod utils;
 use crate::units::day::{create_daily_dir_if_not_exists,get_current_day,Day};
 use crate::commands::core::{
-    punch_in, 
-    punch_out, 
-    take_break, 
-    resume, 
-    view_day, 
+    punch_in,
+    punch_out,
+    take_break,
+    resume,
+    view_day,
     edit_day,
     switch_to_new_task,
     update_current_task_name,
@@ -48,7 +48,7 @@ enum SubCommand {
 
 impl SubCommand {
     fn from_string(name: &String, other_args: Vec<String>) -> Self {
-        return match name.to_owned().trim() {
+        match name.to_owned().trim() {
             "in" => Self::In(other_args),
             "out" => Self::Out(other_args),
             "pause" => Self::Pause(other_args),
@@ -68,19 +68,26 @@ impl SubCommand {
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        return Vec::from(
+        Vec::from(
             [
-                "in", "out", "pause", "resume", "summary", "view", "edit", 
+                "in", "out", "pause", "resume", "summary", "view", "edit",
                 "task", "note", "edit-config", "add-summary", "update-task",
                 "version", "-v", "--version"
             ].map(|x: &str| x.to_string())
-        );
+        )
     }
 }
 
 fn main() {
     let env_args: Vec<String> = args().collect();
-    let command_name: &String = &env_args[1];
+    let command_name: &String;
+
+    if let Some(name) = env_args.get(1) {
+        command_name = name;
+    } else {
+        handle_invalid_cmd(" ");
+        return;
+    }
     let other_args: Vec<String> = env_args[2..].to_vec();
     let command: SubCommand = SubCommand::from_string(command_name, other_args);
 
@@ -134,7 +141,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     }
 }
 
-fn handle_invalid_cmd(command: &String) {
+fn handle_invalid_cmd(command: &str) {
     eprintln!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
     for str_subcommand in SubCommand::get_allowed_strings() {
         eprintln!("\t{}", str_subcommand);
