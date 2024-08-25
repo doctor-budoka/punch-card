@@ -24,7 +24,7 @@ use crate::commands::core::{
 use crate::utils::file_io::{create_base_dir_if_not_exists};
 use crate::utils::config::{create_default_config_if_not_exists};
 
-const VERSION: &str = "2.2.4";
+const VERSION: &str = "2.2.5";
 
 
 #[derive(PartialEq)]
@@ -48,7 +48,7 @@ enum SubCommand {
 
 impl SubCommand {
     fn from_string(name: &String, other_args: Vec<String>) -> Self {
-        match name.to_owned().trim() {
+        return match name.to_owned().trim() {
             "in" => Self::In(other_args),
             "out" => Self::Out(other_args),
             "pause" => Self::Pause(other_args),
@@ -68,7 +68,7 @@ impl SubCommand {
     }
 
     fn get_allowed_strings() -> Vec<String> {
-        Vec::from(
+        return Vec::from(
             [
                 "in", "out", "pause", "resume", "summary", "view", "edit",
                 "task", "note", "edit-config", "add-summary", "update-task",
