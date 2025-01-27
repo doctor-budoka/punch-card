@@ -140,6 +140,10 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
         let mut config: Config = get_config();
+        config.update_minutes_behind(-seconds_left_before / 60);
+        update_config(config);
+
+        let mut config: Config = get_config();
         summarise_time(&day, &mut config);
     }
     else {
