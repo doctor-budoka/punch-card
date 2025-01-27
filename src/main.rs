@@ -9,6 +9,7 @@ use crate::units::day::{create_daily_dir_if_not_exists,get_current_day,Day};
 use crate::commands::core::{
     punch_in,
     punch_out,
+    punch_back_in,
     take_break,
     resume,
     view_day,
@@ -31,6 +32,7 @@ const VERSION: &str = "2.2.5";
 enum SubCommand {
     In(Vec<String>),
     Out(Vec<String>),
+    BackIn(Vec<String>),
     Pause(Vec<String>),
     Resume(Vec<String>),
     Summary(Vec<String>),
@@ -51,6 +53,7 @@ impl SubCommand {
         return match name.to_owned().trim() {
             "in" => Self::In(other_args),
             "out" => Self::Out(other_args),
+            "back-in" => Self::BackIn(other_args),
             "pause" => Self::Pause(other_args),
             "resume" => Self::Resume(other_args),
             "summary" => Self::Summary(other_args),
@@ -70,7 +73,7 @@ impl SubCommand {
     fn get_allowed_strings() -> Vec<String> {
         return Vec::from(
             [
-                "in", "out", "pause", "resume", "summary", "view", "edit",
+                "in", "out", "back-in", "pause", "resume", "summary", "view", "edit",
                 "task", "note", "edit-config", "add-summary", "update-task",
                 "version", "-v", "--version"
             ].map(|x: &str| x.to_string())
@@ -123,6 +126,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
 
         match command {
             SubCommand::Out(_) => punch_out(&now, day),
+            SubCommand::BackIn(other_args) => punch_back_in(&now, other_args, day),
             SubCommand::Pause(other_args) => take_break(&now, other_args, day),
             SubCommand::Resume(other_args) => resume(&now, other_args, day),
             SubCommand::Summary(_) => summary(&now, day),
