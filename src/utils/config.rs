@@ -59,7 +59,7 @@ impl Config {
     pub fn update_minutes_behind(&mut self, delta: i64) {
         let true_time_behind: i64 = self.minutes_behind() + delta;
         let non_neg_time_behind: i64 = self.minutes_behind_non_neg() as i64 + delta;
-        let new_non_neg_time_behind: u64 = if true_time_behind < 0 {0} else {non_neg_time_behind} as u64;
+        let new_non_neg_time_behind: u64 = if true_time_behind < 0 || non_neg_time_behind < 0 {0} else {non_neg_time_behind} as u64;
         self.minutes_behind = true_time_behind;
         self.minutes_behind_non_neg = new_non_neg_time_behind;
     }

@@ -11,6 +11,7 @@ Once it's installed you can start your day by running `punch in`. The following 
 - `pause`: To take a break.
 - `resume`: To resume after you come back from a break. You should give it a new task name for the black about to start.
 - `out`: Ends the day. If you end the day while on a break, the break is automatically ended. This also works if you end up working after midnight too.
+- `back-in`: If you end the day accidentally/learn later that you need to punch back in, use this command.
 - `task`: Used to start a new time-block for working on a new task. Used for task time-tracking.
 - `view`: Allows you to see a string representation of your day.
 - `edit`: Allows you to edit your day so far.

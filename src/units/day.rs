@@ -139,6 +139,30 @@ impl Day {
         }
     }
 
+    pub fn restart_day(
+        &mut self, 
+        break_name: String,
+        task_name: String, 
+        at: &DateTime<Local>) 
+    -> Result<i64, &str> {
+        if !self.has_ended() {
+            return Err("Can't punch back in since the day hasn't ended yet");
+        }
+        let time_left_before: i64 = self.get_time_left_secs().expect("Day is over so we should be able to calculate time left!");
+        let day_end: Dt = self.get_day_end().expect("Day end should exist since the day is over");
+
+        self.overall_interval.unset_end();
+        self.start_break_at(break_name, &day_end.as_dt()).unwrap();
+
+        let new_task_result: Result<(), &str> = self.start_new_block(task_name, at);
+        if let Err(err_msg) = new_task_result {
+            return Err(err_msg);
+        }
+        else {
+            return Ok(time_left_before);
+        }
+    }
+
     pub fn get_day_start(&self) -> Dt {
         return self.overall_interval.get_start();
     }

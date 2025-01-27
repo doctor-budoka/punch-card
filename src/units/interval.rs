@@ -146,4 +146,8 @@ impl Interval {
             None => None,
         };
     }
+
+    pub fn unset_end(&mut self) {
+        self.end = None;
+    }
 }

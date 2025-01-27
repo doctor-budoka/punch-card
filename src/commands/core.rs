@@ -124,6 +124,43 @@ fn get_resume_task_from_args(other_args: Vec<String>, day: Day) -> Result<String
     }
 }
 
+pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
+    let new_block_task_result: Result<String, String> = get_restart_task_from_args(
+        other_args, day.clone());
+    if let Err(msg) = new_block_task_result {
+        eprintln!("{}", msg);
+        exit(1);
+    }
+    let new_block_task: String = new_block_task_result.expect("We've precluded no arguments");
+
+    let default_break_name = get_config().get_default_break_task().to_owned();
+    let restart_result: Result<i64, &str> = day.restart_day(default_break_name, new_block_task, &now);
+    if let Ok(seconds_left_before) = restart_result {
+        println!("Back to work at '{}'", &now);
+        write_day(&day);
+        if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
+        let mut config: Config = get_config();
+        config.update_minutes_behind(-seconds_left_before / 60);
+        update_config(config);
+
+        let mut config: Config = get_config();
+        summarise_time(&day, &mut config);
+    }
+    else {
+        let msg = restart_result.unwrap_err();
+        eprintln!("{}", msg);
+        exit(1);
+    }
+}
+
+fn get_restart_task_from_args(other_args: Vec<String>, day: Day) -> Result<String, String> {
+    return match other_args.len() {
+        0 => Ok(day.get_task_name(-1)),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch back-in' should have at most one argument!".to_string()),
+    }
+}
+
 pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<String>) {
     let new_block_task_result: Result<String, String> = get_new_task_block_from_args(other_args);
     if let Err(msg) = new_block_task_result {
