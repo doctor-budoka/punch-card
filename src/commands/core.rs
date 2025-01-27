@@ -155,7 +155,7 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
 
 fn get_restart_task_from_args(other_args: Vec<String>, day: Day) -> Result<String, String> {
     return match other_args.len() {
-        0 => Ok(day.get_task_name(-2)),
+        0 => Ok(day.get_task_name(-1)),
         1 => Ok(other_args[0].to_owned()),
         _ => Err("'punch back-in' should have at most one argument!".to_string()),
     }
