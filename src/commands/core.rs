@@ -125,7 +125,7 @@ fn get_resume_task_from_args(other_args: Vec<String>, day: Day) -> Result<String
 }
 
 pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
-    let new_block_task_result: Result<String, String> = get_return_task_from_args(
+    let new_block_task_result: Result<String, String> = get_restart_task_from_args(
         other_args, day.clone());
     if let Err(msg) = new_block_task_result {
         eprintln!("{}", msg);
@@ -149,7 +149,7 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
     }
 }
 
-fn get_return_task_from_args(other_args: Vec<String>, day: Day) -> Result<String, String> {
+fn get_restart_task_from_args(other_args: Vec<String>, day: Day) -> Result<String, String> {
     return match other_args.len() {
         0 => Ok(day.get_task_name(-2)),
         1 => Ok(other_args[0].to_owned()),
