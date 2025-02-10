@@ -325,10 +325,14 @@ pub fn string_as_time(time_str: &String) -> DateTime<Local> {
     return start_time;
 }
 
+pub fn get_day_file_path_from_date_str(date_str: &str) -> String {
+    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + date_str;
+}
+
 
 pub fn get_day_file_path(now: &DateTime<Local>) -> String {
     let day_string: String = now.format(DATE_FMT).to_string();
-    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
+    return get_day_file_path_from_date_str(&day_string);
 }
 
 
@@ -338,14 +342,21 @@ pub fn write_day(day: &Day) {
 }
 
 
-pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
-    let path: &String = &get_day_file_path(&now);
+pub fn read_day_from_date_str(date_str: &str) -> Result<Day, std::io::Error> {
+    let path: &String = &get_day_file_path_from_date_str(date_str);
     let read_result: Result<String, std::io::Error> = read_file(path);
     return match read_result {
         Ok(string) => Ok(Day::from_string(&string)),
         Err(err) => Err(err),
     };
 }
+
+
+pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
+    let day_string: String = now.format(DATE_FMT).to_string();
+    return read_day_from_date_str(&day_string);
+}
+
 
 pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
     let yesterday: DateTime<Local> = *now - Duration::days(1);
@@ -359,6 +370,7 @@ pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
         return Err("Can't get current day. Have you punched in?".to_string());
     }
 }
+
 
 pub fn create_daily_dir_if_not_exists() {
     let daily_dir: String = BASE_DIR.to_string() + &(DAILY_DIR.to_string());
