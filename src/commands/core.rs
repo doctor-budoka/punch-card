@@ -6,6 +6,7 @@ use crate::utils::file_io::SafeFileEdit;
 use crate::units::day::{
     Day,
     read_day,
+    read_day_from_date_str,
     write_day};
 
 use crate::utils::config::{Config, get_config, update_config};
@@ -195,6 +196,33 @@ fn get_new_task_block_from_args(other_args: Vec<String>) -> Result<String, Strin
 pub fn view_day(day: Day) {
     println!("Here's the day so far: \n");
     println!("{}", day.as_string());
+}
+
+pub fn view_past(other_args: Vec<String>) {
+    let arg_result: Result<String, String> = parse_args_for_view_past(other_args);
+    
+    if let Err(msg) = arg_result {
+        eprintln!("{}", msg);
+        exit(1);
+    }
+    else if let Ok(date_str) = arg_result {
+        if let Ok(day) = read_day_from_date_str(&date_str) {
+            println!("Here is {}:\n", date_str);
+            println!("{}", day.as_string());
+        }
+        else {
+            eprintln!("'{}' does not have a day associated with it!", date_str);
+        }
+    }
+    
+}
+
+fn parse_args_for_view_past(other_args: Vec<String>) -> Result<String, String> {
+    return match other_args.len() {
+        0 => Err("'punch view-past' needs a new task name!".to_string()),
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch view-past' should have at most one argument!".to_string()),
+    };
 }
 
 pub fn edit_day(day: Day) {

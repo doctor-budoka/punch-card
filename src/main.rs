@@ -13,6 +13,7 @@ use crate::commands::core::{
     take_break,
     resume,
     view_day,
+    view_past,
     edit_day,
     switch_to_new_task,
     update_current_task_name,
@@ -37,6 +38,7 @@ enum SubCommand {
     Resume(Vec<String>),
     Summary(Vec<String>),
     View(Vec<String>),
+    ViewPast(Vec<String>),
     Edit(Vec<String>),
     Task(Vec<String>),
     Note(Vec<String>),
@@ -58,6 +60,7 @@ impl SubCommand {
             "resume" => Self::Resume(other_args),
             "summary" => Self::Summary(other_args),
             "view" => Self::View(other_args),
+            "view-past" => Self::ViewPast(other_args),
             "edit" => Self::Edit(other_args),
             "task" => Self::Task(other_args),
             "note" => Self::Note(other_args),
@@ -73,7 +76,7 @@ impl SubCommand {
     fn get_allowed_strings() -> Vec<String> {
         return Vec::from(
             [
-                "in", "out", "back-in", "pause", "resume", "summary", "view", "edit",
+                "in", "out", "back-in", "pause", "resume", "summary", "view", "view-past", "edit",
                 "task", "note", "edit-config", "add-summary", "update-task",
                 "version", "-v", "--version"
             ].map(|x: &str| x.to_string())
@@ -110,6 +113,9 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     if let SubCommand::In(other_args) = command {
         punch_in(&now, other_args);
     }
+    else if let SubCommand::ViewPast(other_args) = command {
+        view_past(other_args);
+    }
     else if let SubCommand::Version(_other_args) = command {
         println!("Current punch-card version: {}", VERSION);
     }
@@ -141,6 +147,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
             SubCommand::Version(_) => unreachable!("`punch version/--version/-v` commands should already be processed."),
             SubCommand::In(_) => unreachable!("'punch in' commands shouldn't be being processed"),
             SubCommand::Invalid(_) => unreachable!("Invalid commands shouldn't be being processed here"),
+            SubCommand::ViewPast(_) => unreachable!("'punch view-past' commands shouldn't be processed here."),
         }
     }
 }
