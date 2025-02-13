@@ -278,12 +278,16 @@ impl Day {
         self.summaries.push(summary);
     }
 
+    pub fn get_total_break_timeblocks(&self) -> u64 {
+        return self.breaks.len() as u64;
+    }
+
     pub fn get_total_timeblocks(&self) -> u64 {
         return self.timeblocks.len() as u64;
     }
 
     pub fn get_total_timeblocks_without_breaks(&self) -> u64 {
-        return self.get_total_timeblocks() - (self.breaks.len() as u64);
+        return self.get_total_timeblocks() - self.get_total_break_timeblocks();
     }
 
     pub fn get_tasks_in_chronological_order(&self) -> Vec<String> {
