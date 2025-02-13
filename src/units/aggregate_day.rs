@@ -86,33 +86,25 @@ impl AggregateDay {
     }
 
     pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> String {
-        let num_days_str: String = format!("Num days summarised: {}", self.num_days);
-        let total_time_str: String = format!(
-            "Total work time (including breaks): {}", render_seconds_human_readable(time_done_secs));
-        let total_time_done_str: String = format!(
-            "Total time working (excluding breaks): {}", render_seconds_human_readable(self.get_total_time_done()));
-        let total_break_time_str: String = format!(
-            "Total time spent on break: {}", render_seconds_human_readable(self.total_break_time));
-        let total_breaks_str: String = format!("Total breaks: {}", self.total_breaks);
-        let time_behind_str: String = format!(
-            "Time behind over period: {}", render_seconds_human_readable(self.get_time_behind_over_period()), 
+        let full_message: String = format!("Num days summarised: {}", self.num_days);
+        full_message += &format!(
+            "\nTotal work time (including breaks): {}", render_seconds_human_readable(time_done_secs));
+        full_message += &format!(
+            "\nTotal time working (excluding breaks): {}", render_seconds_human_readable(self.get_total_time_done()));
+        full_message += &format!(
+            "\nTotal time spent on break: {}", render_seconds_human_readable(self.total_break_time));
+        full_message += &format!("\nTotal breaks: {}", self.total_breaks);
+        full_message += &format!(
+            "\nTime behind over period: {}", render_seconds_human_readable(self.get_time_behind_over_period()), 
         );
-        let main_summary = format!(
-            "{}\n{}\n{}\n{}\n{}\n{}", 
-            num_days_str, total_time_str, total_time_done_str, total_break_time_str, total_breaks_str, time_behind_str
-        );
-        let total_blocks_str: String = format!(
-            "Total task blocks (including breaks): {}", self.get_total_blocks());
-        let total_non_break_blocks_str: String = format!(
-            "Total task blocks (excluding breaks): {}", self.get_total_non_break_blocks());
-        let tasks_summary: String = format!(
-            "{}\n{}\nTask times, blocks:", total_blocks_str, total_non_break_blocks_str
-        );
+        full_message += &format!(
+            "\nTotal task blocks (including breaks): {}", self.get_total_blocks());
+        full_message += &format!(
+            "\nTotal task blocks (excluding breaks): {}", self.get_total_non_break_blocks());
+        full_message += &"\nTask times, blocks:";
         for (task_name, (time, blocks)) in self.tasks.into_iter() {
             tasks_summary += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(time), blocks);
         }
-
-        let full_message: String = format!("{}\n{}", main_summary, tasks_summary);
         if include_overall_time_behind {
             full_message += &format!(
                 "\nTime behind overall: {}", render_seconds_human_readable(self.get_time_behind_overall()), 
