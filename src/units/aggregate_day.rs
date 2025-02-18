@@ -6,6 +6,7 @@ use serde::{Serialize, Deserialize};
 use crate::units::components::TimeBlock;
 use crate::units::interval::{Dt,Interval, DATE_FMT, DATETIME_FMT};
 use crate::units::components::Day;
+use crate::utils::misc::render_seconds_human_readable;
 
 use crate::utils::file_io::{
     create_dir_if_not_exists,
@@ -112,8 +113,4 @@ impl AggregateDay {
         }
         return full_message;
     }
-}
-
-pub fn render_seconds_human_readable(secs: i64) -> String {
-    return format!("{} m {} s", secs / 60, secs % 60);
 }
