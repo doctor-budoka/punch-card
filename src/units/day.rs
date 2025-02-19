@@ -321,7 +321,7 @@ impl Day {
         let total_blocks_without_breaks: u64 = self.get_total_timeblocks_without_breaks();
         let time_done_secs: i64 = self.get_time_done_secs().unwrap();
 
-        let summary_str: String = format!(
+        let mut summary_str: String = format!(
             "Total time (from punch in to punch out): {}", render_seconds_human_readable(day_length)
         );
         summary_str += &format!("Time done today: {}", render_seconds_human_readable(time_done_secs));

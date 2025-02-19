@@ -38,12 +38,13 @@ impl AggregateDay {
         self.total_time_to_do += day.get_time_to_do();
         self.num_days += 1;
 
-        let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();        
+        let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();
+        let old_task_totals: HashMap<String, (u64, u64)> = self.task_totals.clone();
         for task_name in day.get_tasks_in_chronological_order() {
             let (time, blocks) = task_summaries.get(&task_name).unwrap();
-            let (curr_time, curr_blocks) = self.task_totals.entry(task_name).or_insert((0, 0));
+            let (curr_time, curr_blocks): (u64, u64) = *old_task_totals.get(&task_name).unwrap_or(&(0, 0));
 
-            self.task_totals.insert(task_name, (*curr_time + (*time as u64), *curr_blocks + blocks));
+            self.task_totals.insert(task_name, (curr_time + (*time as u64), curr_blocks + blocks));
         }
         return Ok(());
     }
@@ -69,7 +70,7 @@ impl AggregateDay {
     }
 
     pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> Result<String, &str> {
-        let summary_str: String = format!("Num days summarised: {}", self.num_days);
+        let mut summary_str: String = format!("Num days summarised: {}", self.num_days);
         summary_str += &format!(
             "\nTotal work time (including breaks): {}", render_seconds_human_readable(self.total_time as i64));
         summary_str += &format!(
@@ -85,7 +86,7 @@ impl AggregateDay {
         summary_str += &format!("\nTotal breaks: {}", self.num_breaks);
         summary_str += "\n";
         summary_str += &"\nTask times, blocks:";
-        for (task_name, (time, blocks)) in self.task_totals.into_iter() {
+        for (task_name, (time, blocks)) in self.task_totals.clone().into_iter() {
             summary_str += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(time as i64), blocks);
         }
         summary_str += "\n";
