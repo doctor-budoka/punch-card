@@ -53,9 +53,13 @@ pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
         write_day(&day);
-
-
-        update_time_behind(day);
+        match update_time_behind(day) {
+            Ok(()) => (),
+            Err(err_msg) => {
+                eprintln!("{}", err_msg);
+                exit(1);
+            }
+        }
     }
     else {
         println!("Can't punch out: Already punched out for the day!");
@@ -257,7 +261,7 @@ pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
         day.add_summary(category, project, task, summary);
         write_day(&day);
     }
-
+}
 
 pub fn view_config() {
     println!("Here's the current config: \n");
@@ -320,7 +324,7 @@ fn get_new_task_name_from_args(other_args: Vec<String>) -> Result<String, String
         1 => Ok(other_args[0].to_owned()),
         _ => Err("'punch update-task' should have at most one argument!".to_string()),
     };
-}}
+}
 
 
 fn update_time_behind(day: Day) -> Result<(), String> {

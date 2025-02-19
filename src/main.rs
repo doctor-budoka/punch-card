@@ -21,10 +21,10 @@ use crate::commands::core::{
     add_summary_to_today,
     view_config,
     edit_config,
-    summary,
 };
-use crate::utils::file_io::{create_base_dir_if_not_exists};
-use crate::utils::config::{create_default_config_if_not_exists};
+use crate::commands::day_summaries::summary;
+use crate::utils::file_io::create_base_dir_if_not_exists;
+use crate::utils::config::create_default_config_if_not_exists;
 
 const VERSION: &str = "2.4.0";
 
