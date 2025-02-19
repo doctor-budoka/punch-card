@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::process::exit;
 use chrono::prelude::{DateTime, Local};
 use crate::commands::day_summaries::print_day_summary;
@@ -78,9 +77,9 @@ pub fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) 
 
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day):
-        if Err(err_msg) = summary_result {
-            eprintln!(err_msg);
+        let summary_result = print_day_summary(day);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
             exit(1);
         }
     }
@@ -115,9 +114,9 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day):
-        if Err(err_msg) = summary_result {
-            eprintln!(err_msg);
+        let summary_result = print_day_summary(day);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
             exit(1);
         }
     }
@@ -155,9 +154,9 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
         config.update_minutes_behind(-seconds_left_before / 60);
         update_config(config);
 
-        let summary_result = print_day_summary(day):
-        if Err(err_msg) = summary_result {
-            eprintln!(err_msg);
+        let summary_result = print_day_summary(day);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
             exit(1);
         }
     }
@@ -190,9 +189,9 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day):
-        if Err(err_msg) = summary_result {
-            eprintln!(err_msg);
+        let summary_result = print_day_summary(day);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
             exit(1);
         }
     }
@@ -302,9 +301,9 @@ pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args:
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day):
-        if Err(err_msg) = summary_result {
-            eprintln!(err_msg);
+        let summary_result = print_day_summary(day);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
             exit(1);
         }
     }
@@ -324,7 +323,7 @@ fn get_new_task_name_from_args(other_args: Vec<String>) -> Result<String, String
 }}
 
 
-fn update_time_behind(day: Day) -> Result<(), &str> {
+fn update_time_behind(day: Day) -> Result<(), String> {
     if day.has_ended() {
         let mut config: Config = get_config();
         let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should have a time left!");
@@ -333,6 +332,6 @@ fn update_time_behind(day: Day) -> Result<(), &str> {
         return Ok(());
     }
     else {
-        return Err("Can't update time behind: The day isn't over yet");
+        return Err("Can't update time behind: The day isn't over yet".to_string());
     }
 }
