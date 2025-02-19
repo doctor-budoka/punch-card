@@ -86,7 +86,7 @@ impl AggregateDay {
         return self.get_total_blocks() - self.total_breaks;
     }
 
-    pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> String {
+    pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> Result<String, &str> {
         let full_message: String = format!("Num days summarised: {}", self.num_days);
         full_message += &format!(
             "\nTotal work time (including breaks): {}", render_seconds_human_readable(time_done_secs));
@@ -111,6 +111,6 @@ impl AggregateDay {
                 "\nTime behind overall: {}", render_seconds_human_readable(self.get_time_behind_overall()), 
             );
         }
-        return full_message;
+        return Ok(full_message);
     }
 }
