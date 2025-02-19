@@ -87,30 +87,36 @@ impl AggregateDay {
     }
 
     pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> Result<String, &str> {
-        let full_message: String = format!("Num days summarised: {}", self.num_days);
-        full_message += &format!(
+        let summary_str: String = format!("Num days summarised: {}", self.num_days);
+        summary_str += &format!(
             "\nTotal work time (including breaks): {}", render_seconds_human_readable(time_done_secs));
-        full_message += &format!(
+        summary_str += &format!(
             "\nTotal time working (excluding breaks): {}", render_seconds_human_readable(self.get_total_time_done()));
-        full_message += &format!(
+        summary_str += &format!(
             "\nTotal time spent on break: {}", render_seconds_human_readable(self.total_break_time));
-        full_message += &format!("\nTotal breaks: {}", self.total_breaks);
-        full_message += &format!(
-            "\nTime behind over period: {}", render_seconds_human_readable(self.get_time_behind_over_period()), 
-        );
-        full_message += &format!(
+        summary_str += "\n";
+        
+        summary_str += &format!(
             "\nTotal task blocks (including breaks): {}", self.get_total_blocks());
-        full_message += &format!(
+        summary_str += &format!(
             "\nTotal task blocks (excluding breaks): {}", self.get_total_non_break_blocks());
-        full_message += &"\nTask times, blocks:";
+        summary_str += &format!("\nTotal breaks: {}", self.total_breaks);
+        summary_str += "\n";
+        summary_str += &"\nTask times, blocks:";
         for (task_name, (time, blocks)) in self.tasks.into_iter() {
             tasks_summary += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(time), blocks);
         }
+        summary_str += "\n";
+
+        summary_str += &format!("\nTime to do over period: {}", render_seconds_human_readable(self.total_time_to_do));
+        summary_str += &format!(
+            "\nTime behind over period: {}", render_seconds_human_readable(self.get_time_behind_over_period()), 
+        );
         if include_overall_time_behind {
-            full_message += &format!(
+            summary_str += &format!(
                 "\nTime behind overall: {}", render_seconds_human_readable(self.get_time_behind_overall()), 
             );
         }
-        return Ok(full_message);
+        return Ok(summary_str);
     }
 }
