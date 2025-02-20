@@ -69,7 +69,7 @@ impl AggregateDay {
         return self.get_total_blocks() - self.num_breaks;
     }
 
-    pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> Result<String, &str> {
+    pub fn render_human_readable_summary(&self, include_overall_time_behind: bool) -> Result<String, String> {
         let mut summary_str: String = format!("Num days summarised: {}", self.num_days);
         summary_str += &format!(
             "\nTotal work time (including breaks): {}", render_seconds_human_readable(self.total_time as i64));

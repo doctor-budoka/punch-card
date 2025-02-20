@@ -5,7 +5,7 @@ use std::mem;
 
 
 use crate::units::day::{Day,read_day_from_date_str};
-use crate::units::aggregate_day::AggregateDay
+use crate::units::aggregate_day::AggregateDay;
 use crate::utils::config::{Config, get_config};
 
 struct DateRange(NaiveDate, NaiveDate);
@@ -33,12 +33,34 @@ pub fn summarise_date_range(start_date_str: String, end_date_str: String, initia
 
     let seed_time: i64 = initial_time_behind_opt.unwrap_or(0);
     let mut aggregated: AggregateDay = AggregateDay::new(seed_time);
-    for local_date in DateRange(start_date, end_date) {
-        let this_date_str: String = local_date.format("%Y-%m-%d");
-        let this_day: Day = read_day_from_date_str(date_str);
-        aggregated.add_day(this_day);
-    }
 
+    let mut days_aggregated: Vec<String> = Vec::new();
+    let mut days_not_there: Vec<String> = Vec::new();
+    let mut days_not_ended: Vec<String> = Vec::new();
+    for local_date in DateRange(start_date, end_date) {
+        let this_date_str: String = local_date.format("%Y-%m-%d").to_string();
+        let this_day_result = read_day_from_date_str(&this_date_str);
+
+        if let Err(_) = this_day_result {
+            days_not_there.push(this_date_str.clone());
+            continue;
+        }
+        let this_day: Day = this_day_result.expect("Already handled error!");
+        if !this_day.has_ended() {
+            days_not_ended.push(this_date_str.clone());
+            continue;
+        }
+        aggregated.add_day(this_day);
+        days_aggregated.push(this_date_str.clone());
+    }
+    
+    println!("Days aggregated: {}", days_aggregated.join(", "));
+    if days_not_there.len() > 0 {
+        println!("Days not there: {}", days_not_there.join(", "));
+    }
+    if days_not_ended.len() > 0 {
+        println!("Days not ended: {}", days_not_ended.join(", "));
+    }
     let print_result: Result<(), String> = print_aggregated_day_summary(&aggregated, initial_time_behind_opt.is_some());
     if let Err(err_msg) = print_result {
         eprintln!("{}", err_msg);
@@ -57,9 +79,13 @@ pub fn print_aggregated_day_summary(aggregate_day: &AggregateDay, include_overal
     }
 }
 
-
 pub fn summary_past(date_str: String) {
-    let day: Day = read_day_from_date_str(&date_str);
+    let day_result = read_day_from_date_str(&date_str);
+    if let Err(_) = day_result {
+        eprintln!("'{}' either doesn't exist or is malformed!", date_str);
+        exit(1);
+    }
+    let day: Day = day_result.expect("Already handled the error case!");
     if let Err(err_msg) = print_day_summary(day, false) {
         eprintln!("{}", err_msg);
         exit(1);
@@ -83,7 +109,7 @@ pub fn print_day_summary(day: Day, use_config_for_time_behind: bool) -> Result<(
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
         true => {
             let config: Config = get_config();
-            config.minutes_behind() * 60;
+            Some(config.minutes_behind() * 60)
         },
         false => None,
     };
