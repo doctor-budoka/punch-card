@@ -208,6 +208,7 @@ impl Day {
         return self.overall_interval.get_length_mins() 
     }
 
+    #[allow(dead_code)]
     pub fn get_task_times_secs(&self) -> HashMap<String, i64> {
         return HashMap::from_iter(
             self.tasks.clone().into_iter().map(

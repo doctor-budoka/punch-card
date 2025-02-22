@@ -24,6 +24,7 @@ pub fn convert_date_to_date_str(date: NaiveDate) -> String {
     return date.format("%Y-%m-%d").to_string();
 }
 
+#[allow(dead_code)]
 pub fn get_todays_date_str() -> String {
     return convert_date_to_date_str(get_local_now().date_naive());
 }
