@@ -1,31 +1,98 @@
-use chrono::{NaiveDate, Duration};
-use chrono::prelude::{DateTime, Local};
+use chrono::{DateTime, Duration, Local, NaiveDate};
 use std::process::exit;
-use std::mem;
-
 
 use crate::units::day::{Day,read_day_from_date_str};
 use crate::units::aggregate_day::AggregateDay;
 use crate::utils::config::{Config, get_config};
+use crate::utils::dates_and_times::{get_local_now, convert_date_to_date_str, DateRange};
 
-struct DateRange(NaiveDate, NaiveDate);
-
-impl Iterator for DateRange {
-    type Item = NaiveDate;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.0 <= self.1 {
-            let next = self.0 + Duration::days(1);
-            Some(mem::replace(&mut self.0, next))
-        } else {
-            None
+pub fn summarise_week(args: Vec<String>) {
+    match parse_args_for_summarise_week(args) {
+        Ok((start_date_str, end_date_str, initial_time_behind_opt)) => {
+            summarise_date_range(start_date_str, end_date_str, initial_time_behind_opt)
+        },
+        Err(msg) => {
+            eprintln!("{}", msg);
+            exit(1);
         }
     }
 }
 
-pub fn summarise_week(args: Vec<String>) {}
+fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(String, String, Option<i64>), String> {
+    if args.len() > 2 {
+        return Err("Too many args found for summarise_week".to_owned());
+    }
 
+    let current_date = if args.len() == 0 {get_local_now().date_naive()} else {
+            let parse_date_result = NaiveDate::parse_from_str(&args[0], "%Y-%m-%d");
+            if let Err(_) = parse_date_result {
+                return Err(format!("First argument for summarise-week must be a date of the form 'YYYY-mm-dd'. Got: '{}'", args[0]));
+            }
+            parse_date_result.expect("Error already handled")
+        };
+    
+    let week_before: NaiveDate = current_date - Duration::days(6);
 
-pub fn summarise_days(args: Vec<String>) {}
+    let intial_time_behind_opt = if args.len() == 2 {
+            let parse_result: Result<i64, std::num::ParseIntError> = args[1].parse::<i64>();
+            if let Err(_) = parse_result {
+                return Err(format!("Second argument for summarise-week must be an integer. Got: {}", args[1]));
+            }
+            Some(parse_result.expect("Error from parsing i64 already handled!"))
+        } else {None};
+    
+    return Ok((
+        convert_date_to_date_str(current_date), 
+        convert_date_to_date_str(week_before), 
+        intial_time_behind_opt));
+}
+
+pub fn summarise_days(args: Vec<String>) {
+    match parse_args_for_summarise_days(args) {
+        Ok((start_date_str, end_date_str, initial_time_behind_opt)) => {
+            summarise_date_range(start_date_str, end_date_str, initial_time_behind_opt)
+        },
+        Err(msg) => {
+            eprintln!("{}", msg);
+            exit(1);
+        }
+    }
+}
+
+fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(String, String, Option<i64>), String> {
+    if args.len() == 0 {
+        return Err("summarise-days must have at least one argument.".to_string());
+    }
+    if args.len() > 3 {
+        return Err("summarise-days must have at most three arguments.".to_string());
+    }
+    let naive_date_result:Result<NaiveDate, chrono::ParseError>  = NaiveDate::parse_from_str(&args[0], "%Y-%m-%d");
+    if let Err(_) = naive_date_result {
+        return Err(format!("First argument for summarise-days must be a date of the form 'YYYY-mm-dd'. Got: '{}'", args[0]));
+    }
+    let naive_start_date = naive_date_result.expect("Error for this has already been handled!");
+    let naive_end_date = if args.len() >= 2 {
+            let naive_end_date_result: Result<NaiveDate, chrono::ParseError>  = NaiveDate::parse_from_str(&args[1], "%Y-%m-%d");
+            if let Err(_) = naive_end_date_result {
+                return Err(format!("Second argument for summarise-days must be a date of the form 'YYYY-mm-dd'. Got: '{}'", args[1]));
+            }
+            naive_date_result.expect("Error for this has already been handled!")
+        } else {naive_start_date};
+    
+    let initial_time_behind_opt = if args.len() == 3 {
+        let parse_result: Result<i64, std::num::ParseIntError> = args[2].parse::<i64>();
+        if let Err(_) = parse_result {
+            return Err(format!("Third argument for summarise-days must be an integer. Got: {}", args[2]));
+        }
+        Some(parse_result.expect("Error for this has already been handled!"))
+        } else {None};
+
+    return Ok((
+        convert_date_to_date_str(naive_start_date), 
+        convert_date_to_date_str(naive_end_date), 
+        initial_time_behind_opt
+    ))
+}
 
 pub fn summarise_date_range(start_date_str: String, end_date_str: String, initial_time_behind_opt: Option<i64>) {
     let start_date = NaiveDate::parse_from_str(&start_date_str, "%Y-%m-%d").unwrap();
