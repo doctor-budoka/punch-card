@@ -117,7 +117,10 @@ pub fn summarise_date_range(start_date_str: String, end_date_str: String, initia
             days_not_ended.push(this_date_str.clone());
             continue;
         }
-        aggregated.add_day(this_day);
+        if let Err(err_msg) = aggregated.add_day(this_day) {
+            eprintln!("{}", err_msg);
+            exit(1);
+        };
         days_aggregated.push(this_date_str.clone());
     }
     
@@ -146,7 +149,14 @@ pub fn print_aggregated_day_summary(aggregate_day: &AggregateDay, include_overal
     }
 }
 
-pub fn summary_past(date_str: String) {
+pub fn summary_past(args: Vec<String>) {
+    let parse_result: Result<NaiveDate, String> = parse_args_for_summary_past(args);
+    if let Err(err_msg) = parse_result {
+        eprintln!("{}", err_msg);
+        exit(1);
+    }
+    let date: NaiveDate = parse_result.expect("Error should have already been handeled.");
+    let date_str: String = date.format("%Y-%m-%d").to_string();
     let day_result = read_day_from_date_str(&date_str);
     if let Err(_) = day_result {
         eprintln!("'{}' either doesn't exist or is malformed!", date_str);
@@ -156,6 +166,20 @@ pub fn summary_past(date_str: String) {
     if let Err(err_msg) = print_day_summary(day, false) {
         eprintln!("{}", err_msg);
         exit(1);
+    }
+}
+
+fn parse_args_for_summary_past(args: Vec<String>) -> Result<NaiveDate, String> {
+    return match args.len() {
+        0 => Err("'punch summary-past' takes a single argument. None were given.".to_string()),
+        1 => {
+            let parse_result: Result<NaiveDate, chrono::ParseError> = NaiveDate::parse_from_str(&args[0], "%Y-%m-%d");
+            if let Err(err_contents) = parse_result {
+                return Err(err_contents.to_string());
+            }
+            Ok(parse_result.expect("Error for this has already been processed."))
+        },
+        a => Err(format!("'punch summary-past' takes a single argument. {} were given.", a)),
     }
 }
 
