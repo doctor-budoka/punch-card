@@ -87,6 +87,7 @@ impl TimeBlock {
         return self.interval.get_length_secs();
     }
 
+    #[allow(dead_code)]
     pub fn get_length_mins(&self) -> Option<i64> {
         return self.interval.get_length_mins();
     }
