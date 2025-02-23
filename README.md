@@ -14,8 +14,12 @@ Once it's installed you can start your day by running `punch in`. The following 
 - `back-in`: If you end the day accidentally/learn later that you need to punch back in, use this command.
 - `task`: Used to start a new time-block for working on a new task. Used for task time-tracking.
 - `view`: Allows you to see a string representation of your day.
+- `view-past`: Allows you to see a string representation of some day in the past. It takes one argument: A date string in yyyy-mm-dd format.
 - `edit`: Allows you to edit your day so far.
-- `summary`: Prints a summary of your day. Tells you how many minutes you have worked, how many minutes you have left and how far behind on time you have fallen (for instance, if you finished early one of the days and need to make that time back). 
+- `summary`: Prints a summary of your day. Tells you how many minutes you have worked, how many minutes you have left and how far behind on time you have fallen (for instance, if you finished early one of the days and need to make that time back). It also gives a summary of the tasks you've done and the time spent too.
+- `summary-past`: Does the same as `summary` except you can pick some day in the past. It takes as argument a date string in yyyy-mm-dd format.
+- `summarise-week`: This prints a similar summary to the last two commands except it does it for a week's worth of days. Ran without argument, it summarises the last 7 days including today. Otherwise, you can provide it with a single date string argument, which allows you to summarise the week ending on that date. In addition, you can provide it with a second argument that specifies the time behind when starting the week, which adds an extra summary line.
+- `summarise-days`: This does the same as the previous command except you have to specify the start and end dates. If only one date is provided, it will just summarise that one day, if two date strings are provided, it summarises those days (inclusive). You can also provide a third argument indicating the time behind at the start of the period.
 - `note`: Used to add a note at the current time.
 - `edit-config`: Used to edit the configuration file for `punch`.
 - `view-config`: Used to view the configuration file for `punch`.
