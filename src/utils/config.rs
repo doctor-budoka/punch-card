@@ -1,35 +1,37 @@
-use serde::{Serialize,Deserialize};
+use serde::{Serialize, Deserialize};
 use std::path::Path;
-use crate::utils::file_io::{expand_path,write_file,read_file,BASE_DIR, FromString, ToFile, SafeFileEdit};
+use crate::utils::file_io::{expand_path, write_file, read_file, BASE_DIR, FromString, ToFile, SafeFileEdit};
 
 pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
 const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
 const DEFAULT_BREAK_TASK: &str = "Break";
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     day_in_minutes: i64,
     default_punch_in_task: String,
     default_break_task: String,
     minutes_behind: i64,
     minutes_behind_non_neg: u64,
+    editor_path: Option<String>,
 }
 
 impl Config {
     pub fn new(
-        day_length: i64, 
-        default_punch_in_task: String, 
-        default_break_task: String, 
-        minutes_behind: i64) 
-    -> Self {
+        day_length: i64,
+        default_punch_in_task: String,
+        default_break_task: String,
+        minutes_behind: i64)
+        -> Self {
         return Self {
-            day_in_minutes: day_length, 
+            day_in_minutes: day_length,
             default_punch_in_task: default_punch_in_task,
             default_break_task: default_break_task,
             minutes_behind: minutes_behind,
-            minutes_behind_non_neg: if minutes_behind < 0 {0} else {minutes_behind} as u64,
-        }
+            minutes_behind_non_neg: if minutes_behind < 0 { 0 } else { minutes_behind } as u64,
+            editor_path: Some("vim".to_string()),
+        };
     }
 
     pub fn as_string(&self) -> String {
@@ -55,11 +57,12 @@ impl Config {
     pub fn minutes_behind_non_neg(&self) -> u64 {
         return self.minutes_behind_non_neg;
     }
+    pub fn editor_path(&self) -> Option<&String> { return self.editor_path.as_ref(); }
 
     pub fn update_minutes_behind(&mut self, delta: i64) {
         let true_time_behind: i64 = self.minutes_behind() + delta;
         let non_neg_time_behind: i64 = self.minutes_behind_non_neg() as i64 + delta;
-        let new_non_neg_time_behind: u64 = if true_time_behind < 0 || non_neg_time_behind < 0 {0} else {non_neg_time_behind} as u64;
+        let new_non_neg_time_behind: u64 = if true_time_behind < 0 || non_neg_time_behind < 0 { 0 } else { non_neg_time_behind } as u64;
         self.minutes_behind = true_time_behind;
         self.minutes_behind_non_neg = new_non_neg_time_behind;
     }
@@ -86,7 +89,7 @@ impl ToFile for Config {
     }
 }
 
-impl SafeFileEdit<Config, serde_yaml::Error> for Config{}
+impl SafeFileEdit<Config, serde_yaml::Error> for Config {}
 
 pub fn write_config(path: &String, config: &Config) {
     write_file(path, config.as_string());
@@ -101,7 +104,7 @@ pub fn create_default_config_if_not_exists() {
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
     if !Path::new(&config_path).exists() {
         let default_config: Config = Config::new(
-            DEFAULT_TIME_MINS, 
+            DEFAULT_TIME_MINS,
             DEFAULT_PUNCH_IN_TASK.to_owned(),
             DEFAULT_BREAK_TASK.to_owned(),
             0);
