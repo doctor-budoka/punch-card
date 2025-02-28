@@ -8,8 +8,8 @@ use crate::utils::dates_and_times::{get_local_now, convert_date_to_date_str, Dat
 
 pub fn summarise_week(args: Vec<String>) {
     match parse_args_for_summarise_week(args) {
-        Ok((start_date_str, end_date_str, initial_time_behind_opt)) => {
-            summarise_date_range(start_date_str, end_date_str, initial_time_behind_opt)
+        Ok((start_date, end_date, initial_time_behind_opt)) => {
+            summarise_date_range(start_date, end_date, initial_time_behind_opt)
         },
         Err(msg) => {
             eprintln!("{}", msg);
@@ -18,7 +18,7 @@ pub fn summarise_week(args: Vec<String>) {
     }
 }
 
-fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(String, String, Option<i64>), String> {
+fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(NaiveDate, NaiveDate, Option<i64>), String> {
     if args.len() > 2 {
         return Err("Too many args found for summarise_week".to_owned());
     }
@@ -41,16 +41,13 @@ fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(String, String, O
             Some(parse_result.expect("Error from parsing i64 already handled!"))
         } else {None};
     
-    return Ok((
-        convert_date_to_date_str(current_date), 
-        convert_date_to_date_str(week_before), 
-        intial_time_behind_opt));
+    return Ok((week_before, current_date, intial_time_behind_opt));
 }
 
 pub fn summarise_days(args: Vec<String>) {
     match parse_args_for_summarise_days(args) {
-        Ok((start_date_str, end_date_str, initial_time_behind_opt)) => {
-            summarise_date_range(start_date_str, end_date_str, initial_time_behind_opt)
+        Ok((start_date, end_date, initial_time_behind_opt)) => {
+            summarise_date_range(start_date, end_date, initial_time_behind_opt)
         },
         Err(msg) => {
             eprintln!("{}", msg);
@@ -59,7 +56,7 @@ pub fn summarise_days(args: Vec<String>) {
     }
 }
 
-fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(String, String, Option<i64>), String> {
+fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(NaiveDate, NaiveDate, Option<i64>), String> {
     if args.len() == 0 {
         return Err("summarise-days must have at least one argument.".to_string());
     }
@@ -87,17 +84,10 @@ fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(String, String, O
         Some(parse_result.expect("Error for this has already been handled!"))
         } else {None};
 
-    return Ok((
-        convert_date_to_date_str(naive_start_date), 
-        convert_date_to_date_str(naive_end_date), 
-        initial_time_behind_opt
-    ))
+    return Ok((naive_start_date, naive_end_date, initial_time_behind_opt))
 }
 
-pub fn summarise_date_range(start_date_str: String, end_date_str: String, initial_time_behind_opt: Option<i64>) {
-    let start_date = NaiveDate::parse_from_str(&start_date_str, "%Y-%m-%d").unwrap();
-    let end_date = NaiveDate::parse_from_str(&end_date_str, "%Y-%m-%d").unwrap();
-
+pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_time_behind_opt: Option<i64>) {
     let seed_time: i64 = initial_time_behind_opt.unwrap_or(0);
     let mut aggregated: AggregateDay = AggregateDay::new(seed_time);
 
