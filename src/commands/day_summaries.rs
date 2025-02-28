@@ -155,7 +155,7 @@ pub fn summary_past(args: Vec<String>) {
         eprintln!("{}", err_msg);
         exit(1);
     }
-    let date: NaiveDate = parse_result.expect("Error should have already been handeled.");
+    let date: NaiveDate = parse_result.expect("Error should have already been handled.");
     let date_str: String = date.format("%Y-%m-%d").to_string();
     let day_result = read_day_from_date_str(&date_str);
     if let Err(_) = day_result {
