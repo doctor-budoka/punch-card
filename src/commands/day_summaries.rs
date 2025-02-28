@@ -4,7 +4,7 @@ use std::process::exit;
 use crate::units::day::{Day,read_day_from_date_str};
 use crate::units::aggregate_day::AggregateDay;
 use crate::utils::config::{Config, get_config};
-use crate::utils::dates_and_times::{get_local_now, convert_date_to_date_str, DateRange};
+use crate::utils::dates_and_times::{get_local_now, DateRange};
 
 pub fn summarise_week(args: Vec<String>) {
     match parse_args_for_summarise_week(args) {
