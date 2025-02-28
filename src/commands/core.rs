@@ -240,9 +240,8 @@ pub fn view_past(other_args: Vec<String>) {
 
 fn parse_args_for_view_past(other_args: Vec<String>) -> Result<String, String> {
     return match other_args.len() {
-        0 => Err("'punch view-past' needs a new task name!".to_string()),
         1 => Ok(other_args[0].to_owned()),
-        _ => Err("'punch view-past' should have at most one argument!".to_string()),
+        _ => Err("'punch view-past' should have exactly one argument!".to_string()),
     };
 }
 
