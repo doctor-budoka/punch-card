@@ -68,14 +68,13 @@ fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(NaiveDate, NaiveD
         return Err(format!("First argument for summarise-days must be a date of the form 'YYYY-mm-dd'. Got: '{}'", args[0]));
     }
     let naive_start_date = naive_date_result.expect("Error for this has already been handled!");
-    let naive_end_date = if args.len() >= 2 {
+    let naive_end_date: NaiveDate = if args.len() >= 2 {
             let naive_end_date_result: Result<NaiveDate, chrono::ParseError>  = NaiveDate::parse_from_str(&args[1], "%Y-%m-%d");
             if let Err(_) = naive_end_date_result {
                 return Err(format!("Second argument for summarise-days must be a date of the form 'YYYY-mm-dd'. Got: '{}'", args[1]));
             }
-            naive_date_result.expect("Error for this has already been handled!")
+            naive_end_date_result.expect("Error for this has already been handled!")
         } else {naive_start_date};
-    
     let initial_time_behind_opt = if args.len() == 3 {
         let parse_result: Result<i64, std::num::ParseIntError> = args[2].parse::<i64>();
         if let Err(_) = parse_result {
@@ -113,18 +112,30 @@ pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_
         };
         days_aggregated.push(this_date_str.clone());
     }
-    
-    println!("Days aggregated: {}", days_aggregated.join(", "));
+    println!("Days aggregated: {}", render_list_of_dates_for_user_info(&days_aggregated));
     if days_not_there.len() > 0 {
-        println!("Days not there: {}", days_not_there.join(", "));
+        println!("Days not there: {}", render_list_of_dates_for_user_info(&days_not_there));
     }
     if days_not_ended.len() > 0 {
-        println!("Days not ended: {}", days_not_ended.join(", "));
+        println!("Days not ended: {}", render_list_of_dates_for_user_info(&days_not_ended));
     }
     let print_result: Result<(), String> = print_aggregated_day_summary(&aggregated, initial_time_behind_opt.is_some());
     if let Err(err_msg) = print_result {
         eprintln!("{}", err_msg);
         exit(1);
+    }
+}
+
+fn render_list_of_dates_for_user_info(dates: &Vec<String>) -> String {
+    let max_dates: usize = 5;
+    if dates.len() == max_dates {
+        return "None".to_string();
+    }
+    else if dates.len() <= 5 {
+        return dates.join(", ");
+    }
+    else {
+        return dates[..max_dates].join(", ") + ", ...";
     }
 }
 
