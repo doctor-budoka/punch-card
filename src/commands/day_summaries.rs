@@ -187,7 +187,10 @@ pub fn summary(now: &DateTime<Local>, mut day: Day) {
     let end_result: Result<(), &str> = day.end_day_at(&now);
     match end_result {
         Ok(_) => (),
-        _ => (),
+        Err(err_msg) => {
+            eprintln!("Couldn't end day: {}", err_msg);
+            exit(1);
+        },
     }
     if let Err(err_msg) = print_day_summary(day, true) {
         eprintln!("{}", err_msg);
