@@ -34,7 +34,7 @@ impl AggregateDay {
         }
         self.total_time += day.get_day_length_secs().expect("Day has ended so day length should be known.") as u64;
         self.total_break_time += day.get_total_break_time_secs().expect("Day has ended so day length should be known.") as u64;
-        self.num_breaks += day.get_total_timeblocks();
+        self.num_breaks += day.get_number_of_breaks();
         self.total_time_to_do += day.get_time_to_do();
         self.num_days += 1;
 
@@ -50,7 +50,7 @@ impl AggregateDay {
     }
 
     pub fn get_total_time_done(&self) -> u64 {
-        return self.total_time - self.num_breaks;
+        return self.total_time - self.total_break_time;
     }
 
     pub fn get_time_behind_over_period(&self) -> i64 {
