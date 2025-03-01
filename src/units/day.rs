@@ -310,7 +310,7 @@ impl Day {
 
     pub fn render_human_readable_summary(&self, initial_time_behind_opt: Option<i64>) -> Result<String, String> {
         if !self.has_ended() {
-            return Err("Can't summarise a day before it is over!".to_string())
+            return Err("Can't summarise a day before it has ended!".to_string())
         }
 
         let day_length: i64 = self.get_day_length_secs().expect("Day is over so we should be able to calculate day length!");
