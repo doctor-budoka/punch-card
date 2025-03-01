@@ -1,11 +1,12 @@
-use std::collections::HashMap;
 use std::process::exit;
 use chrono::prelude::{DateTime, Local};
+use crate::commands::day_summaries::print_day_summary;
 use crate::utils::file_io::SafeFileEdit;
 
 use crate::units::day::{
     Day,
     read_day,
+    read_day_from_date_str,
     write_day};
 
 use crate::utils::config::{Config, get_config, update_config};
@@ -52,7 +53,13 @@ pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
         println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
         write_day(&day);
-        update_time_behind(day);
+        match update_time_behind(day) {
+            Ok(()) => (),
+            Err(err_msg) => {
+                eprintln!("{}", err_msg);
+                exit(1);
+            }
+        }
     }
     else {
         println!("Can't punch out: Already punched out for the day!");
@@ -73,8 +80,12 @@ pub fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) 
         write_day(&day);
 
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
+
+        let summary_result = print_day_summary(day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
     }
     else {
         let msg = break_result.unwrap_err();
@@ -106,8 +117,12 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
         println!("Back to work at '{}'", &now);
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
+
+        let summary_result = print_day_summary(day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
     }
     else {
         let msg = resume_result.unwrap_err();
@@ -143,8 +158,11 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
         config.update_minutes_behind(-seconds_left_before / 60);
         update_config(config);
 
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
+        let summary_result = print_day_summary(day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
     }
     else {
         let msg = restart_result.unwrap_err();
@@ -174,8 +192,12 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
         println!("Now working on '{}' from '{}'", &new_block_task, &now);
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
+
+        let summary_result = print_day_summary(day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
     }
     else {
         let msg = result.unwrap_err();
@@ -197,20 +219,35 @@ pub fn view_day(day: Day) {
     println!("{}", day.as_string());
 }
 
+pub fn view_past(other_args: Vec<String>) {
+    let arg_result: Result<String, String> = parse_args_for_view_past(other_args);
+    
+    if let Err(msg) = arg_result {
+        eprintln!("{}", msg);
+        exit(1);
+    }
+    else if let Ok(date_str) = arg_result {
+        if let Ok(day) = read_day_from_date_str(&date_str) {
+            println!("Here is {}:\n", date_str);
+            println!("{}", day.as_string());
+        }
+        else {
+            eprintln!("'{}' does not have a day associated with it!", date_str);
+        }
+    }
+    
+}
+
+fn parse_args_for_view_past(other_args: Vec<String>) -> Result<String, String> {
+    return match other_args.len() {
+        1 => Ok(other_args[0].to_owned()),
+        _ => Err("'punch view-past' should have exactly one argument!".to_string()),
+    };
+}
+
 pub fn edit_day(day: Day) {
     day.safe_edit_from_file();
 }
-
-pub fn summary(now: &DateTime<Local>, mut day: Day) {
-    let end_result: Result<(), &str> = day.end_day_at(&now);
-    match end_result {
-        Ok(_) => (),
-        _ => (),
-    }
-    let mut config: Config = get_config();
-    summarise_time(&day, &mut config);
-}
-
 
 pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
     if other_args.len() != 4 {
@@ -222,43 +259,6 @@ pub fn add_summary_to_today(mut day: Day, other_args: Vec<String>) {
         );
         day.add_summary(category, project, task, summary);
         write_day(&day);
-    }
-}
-
-
-fn summarise_time(day: &Day, config: &mut Config) {
-    let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should be able to calculate time left!");
-    let break_time: i64 = day.get_total_break_time_secs().expect("Day is over so we should be able to calculate total break time!");
-    let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();
-    let total_blocks: u64 = day.get_total_timeblocks();
-    let total_blocks_without_breaks: u64 = day.get_total_timeblocks_without_breaks();
-    config.update_minutes_behind(time_left / 60);
-
-    let time_done_secs = day.get_time_done_secs().unwrap();
-    println!("Time done today: {} m {} s", time_done_secs / 60, time_done_secs % 60);
-    println!("Total time spent on break: {} m {} s", break_time / 60, break_time % 60);
-    println!("Time left today: {} m {} s", time_left / 60, time_left % 60);
-    println!("Total task blocks (including breaks): {}", total_blocks);
-    println!("Total task blocks (excluding breaks): {}", total_blocks_without_breaks);
-    println!("Latest task: '{}'", day.get_latest_task_name());
-    println!("Task times, blocks:");
-    for task_name in day.get_tasks_in_chronological_order() {
-        let (time, blocks) = task_summaries.get(&task_name).unwrap();
-        println!("\t{}: {} m {} s, {} blocks", task_name, time / 60, time % 60, blocks);
-    }
-    println!("Minutes behind overall: {}", config.minutes_behind());
-    println!("Minutes behind since last fall behind: {}", config.minutes_behind_non_neg());
-}
-
-
-fn update_time_behind(day: Day) {
-    if day.has_ended() {
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
-        update_config(config);
-    }
-    else {
-        panic!("Can't update time behind: The day isn't over yet")
     }
 }
 
@@ -303,8 +303,12 @@ pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args:
         println!("Updated the current task to '{}'", &task_name);
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
-        let mut config: Config = get_config();
-        summarise_time(&day, &mut config);
+
+        let summary_result = print_day_summary(day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
     }
     else {
         let msg = change_task_result.unwrap_err();
@@ -319,4 +323,18 @@ fn get_new_task_name_from_args(other_args: Vec<String>) -> Result<String, String
         1 => Ok(other_args[0].to_owned()),
         _ => Err("'punch update-task' should have at most one argument!".to_string()),
     };
+}
+
+
+fn update_time_behind(day: Day) -> Result<(), String> {
+    if day.has_ended() {
+        let mut config: Config = get_config();
+        let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should have a time left!");
+        config.update_minutes_behind(time_left / 60);
+        update_config(config);
+        return Ok(());
+    }
+    else {
+        return Err("Can't update time behind: The day isn't over yet".to_string());
+    }
 }

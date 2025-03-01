@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::units::components::TimeBlock;
 use crate::units::interval::{Dt,Interval, DATE_FMT, DATETIME_FMT};
+use crate::utils::misc::render_seconds_human_readable;
 
 use crate::utils::file_io::{
     create_dir_if_not_exists,
@@ -207,6 +208,7 @@ impl Day {
         return self.overall_interval.get_length_mins() 
     }
 
+    #[allow(dead_code)]
     pub fn get_task_times_secs(&self) -> HashMap<String, i64> {
         return HashMap::from_iter(
             self.tasks.clone().into_iter().map(
@@ -249,6 +251,15 @@ impl Day {
         };
     }
 
+    pub fn get_number_of_breaks(&self) -> Option<u64> {
+        return match self.on_break {
+            true => None,
+            false => Some(
+                self.breaks.iter().map(|x: &usize| self.timeblocks[*x].get_length_secs()).count() as u64
+            ),
+        };
+    }
+
     pub fn get_time_done_secs(&self) -> Option<i64> {
         return match (self.get_day_length_secs(), self.get_total_break_time_secs()) {
             (Some(day), Some(breaks)) => Some(day - breaks),
@@ -278,12 +289,16 @@ impl Day {
         self.summaries.push(summary);
     }
 
+    pub fn get_total_break_timeblocks(&self) -> u64 {
+        return self.breaks.len() as u64;
+    }
+
     pub fn get_total_timeblocks(&self) -> u64 {
         return self.timeblocks.len() as u64;
     }
 
     pub fn get_total_timeblocks_without_breaks(&self) -> u64 {
-        return self.get_total_timeblocks() - (self.breaks.len() as u64);
+        return self.get_total_timeblocks() - self.get_total_break_timeblocks();
     }
 
     pub fn get_tasks_in_chronological_order(&self) -> Vec<String> {
@@ -291,6 +306,51 @@ impl Day {
         let mut task_name_vec: Vec<String> =  self.timeblocks.clone().into_iter().map(|x| x.get_task_name()).collect();
         task_name_vec.retain(|x| task_set.insert(x.clone()));
         return task_name_vec;
+    }
+
+    pub fn render_human_readable_summary(&self, initial_time_behind_opt: Option<i64>) -> Result<String, String> {
+        if !self.has_ended() {
+            return Err("Can't summarise a day before it has ended!".to_string())
+        }
+
+        let day_length: i64 = self.get_day_length_secs().expect("Day is over so we should be able to calculate day length!");
+        let time_left: i64 = self.get_time_left_secs().expect("Day is over so we should be able to calculate time left!");
+        let break_time: i64 = self.get_total_break_time_secs().expect("Day is over so we should be able to calculate total break time!");
+        let task_summaries: HashMap<String, (i64, u64)> = self.get_task_times_secs_and_num_blocks();
+        let total_blocks: u64 = self.get_total_timeblocks();
+        let num_breaks: u64 = self.get_number_of_breaks().unwrap();
+        let total_blocks_without_breaks: u64 = self.get_total_timeblocks_without_breaks();
+        let time_done_secs: i64 = self.get_time_done_secs().unwrap();
+
+        let mut summary_str: String = format!(
+            "Total time (from punch in to punch out): {}", render_seconds_human_readable(day_length)
+        );
+        summary_str += &format!("\nTime done today: {}", render_seconds_human_readable(time_done_secs));
+        summary_str += &format!(
+            "\nTime spent on break: {}", render_seconds_human_readable(break_time)
+        );
+        summary_str += "\n";
+
+        summary_str += &format!("\nTotal task blocks (including breaks): {}", total_blocks);
+        summary_str += &format!("\nTotal task blocks (excluding breaks): {}", total_blocks_without_breaks);
+        summary_str += &format!("\nNumber of breaks: {}", num_breaks);
+        summary_str += "\n";
+
+        summary_str += &format!("\nLatest task: '{}'", self.get_latest_task_name());
+        summary_str += &format!("\nTask times, blocks:");
+        for task_name in self.get_tasks_in_chronological_order() {
+            let (time, blocks) = task_summaries.get(&task_name).unwrap();
+            summary_str += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(*time), blocks);
+        }
+        summary_str += "\n";
+
+        summary_str += &format!("\nTime to do today: {}", render_seconds_human_readable(self.time_to_do as i64));
+        summary_str += &format!("\nTime left to do today: {}", render_seconds_human_readable(time_left));
+        if let Some(initial_time_behind) = initial_time_behind_opt {
+            let total_time_behind: i64 = initial_time_behind + time_left;
+            summary_str += &format!("\nTime behind overall: {}", render_seconds_human_readable(total_time_behind));
+        }
+        return Ok(summary_str);
     }
 }
 
@@ -325,10 +385,14 @@ pub fn string_as_time(time_str: &String) -> DateTime<Local> {
     return start_time;
 }
 
+pub fn get_day_file_path_from_date_str(date_str: &str) -> String {
+    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + date_str;
+}
+
 
 pub fn get_day_file_path(now: &DateTime<Local>) -> String {
     let day_string: String = now.format(DATE_FMT).to_string();
-    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + &day_string;
+    return get_day_file_path_from_date_str(&day_string);
 }
 
 
@@ -338,14 +402,21 @@ pub fn write_day(day: &Day) {
 }
 
 
-pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
-    let path: &String = &get_day_file_path(&now);
+pub fn read_day_from_date_str(date_str: &str) -> Result<Day, std::io::Error> {
+    let path: &String = &get_day_file_path_from_date_str(date_str);
     let read_result: Result<String, std::io::Error> = read_file(path);
     return match read_result {
         Ok(string) => Ok(Day::from_string(&string)),
         Err(err) => Err(err),
     };
 }
+
+
+pub fn read_day(now: &DateTime<Local>) -> Result<Day, std::io::Error> {
+    let day_string: String = now.format(DATE_FMT).to_string();
+    return read_day_from_date_str(&day_string);
+}
+
 
 pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
     let yesterday: DateTime<Local> = *now - Duration::days(1);
@@ -359,6 +430,7 @@ pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
         return Err("Can't get current day. Have you punched in?".to_string());
     }
 }
+
 
 pub fn create_daily_dir_if_not_exists() {
     let daily_dir: String = BASE_DIR.to_string() + &(DAILY_DIR.to_string());
