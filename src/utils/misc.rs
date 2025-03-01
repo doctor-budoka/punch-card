@@ -20,7 +20,9 @@ pub fn convert_input_to_seconds(input_str: &str) -> Result<i64, String> {
     if let Ok(secs) = parse_result {
         return Ok(secs);
     }
-    let err_msg: String = format!("Malformed number of seconds. Should be of the form: [zh][ym]xs. Got {}", input_str);
+    let err_msg: String = format!(
+        "Malformed number of seconds. Should be either an integer or of the form: [zh][ym]xs. Got {}", input_str
+    );
     let mut secs: i64 = 0;
     let mut rest: String = input_str.to_lowercase().clone();
     let steps: Vec<(&str, i64)> = vec![("h", 60 * 60), ("m", 60), ("s", 60)];
