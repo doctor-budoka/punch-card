@@ -31,11 +31,16 @@ pub fn convert_input_to_seconds(input_str: &str) -> Result<i64, String> {
     );
     let mut secs: i64 = 0;
     let rest: String = input_str.to_lowercase().clone();
+
+    let check_regex = Regex::new(r"^(\-)?(\d+h)?(\d+m)?(\d+s)$").unwrap();
+    if !check_regex.is_match(&rest) {
+        return Err(err_msg);
+    }
+
     let units_to_secs: HashMap<&str, i64> = HashMap::from([("h", 60 * 60), ("m", 60), ("s", 1)]);
     let re = Regex::new(r"(\d+)([hms])").unwrap();
-    
+    let sign: i64 = if rest.starts_with('-') {-1} else {1};
     for (_, [amount, unit]) in re.captures_iter(&rest).map(|c| c.extract()) {
-        println!("{}, {}", amount, unit);
         let parse_result = amount.parse::<i64>();
         if let Err(_) = parse_result {
             return Err(err_msg);
@@ -44,6 +49,5 @@ pub fn convert_input_to_seconds(input_str: &str) -> Result<i64, String> {
         let multiplier_for_secs: i64 = *units_to_secs.get(unit).unwrap();
         secs += num_unit * multiplier_for_secs;
     }
-    print!("{}", secs);
-    return Ok(secs);
+    return Ok(sign * secs);
 }
