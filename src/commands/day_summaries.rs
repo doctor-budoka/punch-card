@@ -91,6 +91,8 @@ pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_
     let seed_time: i64 = initial_time_behind_opt.unwrap_or(0);
     let mut aggregated: AggregateDay = AggregateDay::new(seed_time);
 
+    let local_now: DateTime<Local> = get_local_now();
+    let todays_date: NaiveDate = local_now.date_naive();
     let mut days_aggregated: Vec<String> = Vec::new();
     let mut days_not_there: Vec<String> = Vec::new();
     let mut days_not_ended: Vec<String> = Vec::new();
@@ -102,8 +104,17 @@ pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_
             days_not_there.push(this_date_str.clone());
             continue;
         }
-        let this_day: Day = this_day_result.expect("Already handled error!");
-        if !this_day.has_ended() {
+        let mut this_day: Day = this_day_result.expect("Already handled error!");
+        if !this_day.has_ended() && (local_date == todays_date) {
+            match this_day.end_day_at(&local_now) {
+                Ok(()) => (),
+                Err(err_msg) => {
+                    eprintln!("Failed to end today: {err_msg}");
+                    exit(1);
+                }
+            }
+        }
+        else if !this_day.has_ended() {
             days_not_ended.push(this_date_str.clone());
             continue;
         }
