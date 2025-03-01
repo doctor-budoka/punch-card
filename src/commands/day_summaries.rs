@@ -5,6 +5,7 @@ use crate::units::day::{Day,read_day_from_date_str};
 use crate::units::aggregate_day::AggregateDay;
 use crate::utils::config::{Config, get_config};
 use crate::utils::dates_and_times::{get_local_now, DateRange};
+use crate::utils::misc::convert_input_to_seconds;
 
 pub fn summarise_week(args: Vec<String>) {
     match parse_args_for_summarise_week(args) {
@@ -34,9 +35,9 @@ fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(NaiveDate, NaiveD
     let week_before: NaiveDate = current_date - Duration::days(6);
 
     let intial_time_behind_opt = if args.len() == 2 {
-            let parse_result: Result<i64, std::num::ParseIntError> = args[1].parse::<i64>();
-            if let Err(_) = parse_result {
-                return Err(format!("Second argument for summarise-week must be an integer. Got: {}", args[1]));
+            let parse_result: Result<i64, String> = convert_input_to_seconds(&args[1]);
+            if let Err(err_msg) = parse_result {
+                return Err(err_msg);
             }
             Some(parse_result.expect("Error from parsing i64 already handled!"))
         } else {None};
@@ -76,9 +77,9 @@ fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(NaiveDate, NaiveD
             naive_end_date_result.expect("Error for this has already been handled!")
         } else {naive_start_date};
     let initial_time_behind_opt = if args.len() == 3 {
-        let parse_result: Result<i64, std::num::ParseIntError> = args[2].parse::<i64>();
-        if let Err(_) = parse_result {
-            return Err(format!("Third argument for summarise-days must be an integer. Got: {}", args[2]));
+        let parse_result: Result<i64, String> = convert_input_to_seconds(&args[2]);
+        if let Err(err_msg) = parse_result {
+            return Err(err_msg);
         }
         Some(parse_result.expect("Error for this has already been handled!"))
         } else {None};
