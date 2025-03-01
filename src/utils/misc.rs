@@ -8,15 +8,15 @@ pub fn render_seconds_human_readable(secs: i64) -> String {
     if abs_secs >= 60 * 60 {
         let hours: i64 = abs_secs / (60 * 60);
         let seconds_left:i64 = abs_secs % (60 * 60);
-        abs_output =  format!("{} h {}", hours, render_seconds_human_readable(sign * seconds_left));
+        abs_output =  format!("{}h {}", hours, render_seconds_human_readable(seconds_left));
     }
     else if abs_secs >= 60 {
         let minutes: i64 = abs_secs / 60;
         let seconds_left: i64 = abs_secs % 60;
-        abs_output = format!("{} m {}", minutes, render_seconds_human_readable(seconds_left));
+        abs_output = format!("{}m {}", minutes, render_seconds_human_readable(seconds_left));
     }
     else {
-        abs_output = format!("{} s", abs_secs);
+        abs_output = format!("{}s", abs_secs);
     }
     return format!("{}{}", sign_str, abs_output);
 }
