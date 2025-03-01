@@ -325,7 +325,7 @@ impl Day {
         let mut summary_str: String = format!(
             "Total time (from punch in to punch out): {}", render_seconds_human_readable(day_length)
         );
-        summary_str += &format!("Time done today: {}", render_seconds_human_readable(time_done_secs));
+        summary_str += &format!("\nTime done today: {}", render_seconds_human_readable(time_done_secs));
         summary_str += &format!(
             "\nTime spent on break: {}", render_seconds_human_readable(break_time)
         );
