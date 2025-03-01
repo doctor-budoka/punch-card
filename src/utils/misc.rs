@@ -1,18 +1,21 @@
 pub fn render_seconds_human_readable(secs: i64) -> String {
-    if secs >= 60 * 60 {
-        let hours: i64 = secs / (60 * 60);
-        let seconds_left:i64 = secs % (60 * 60);
-        return format!("{} h {}", hours, render_seconds_human_readable(seconds_left));
+    let (sign, sign_str): (i64, &str) = if secs < 0 {(-1, "-")} else {(1, "")};
+    let abs_secs: i64 = sign * secs;
+    let abs_output: String;
+    if abs_secs >= 60 * 60 {
+        let hours: i64 = abs_secs / (60 * 60);
+        let seconds_left:i64 = abs_secs % (60 * 60);
+        abs_output =  format!("{} h {}", hours, render_seconds_human_readable(sign * seconds_left));
     }
-    else if secs >= 60 {
-        let minutes: i64 = secs / 60;
-        let seconds_left: i64 = secs % 60;
-        return format!("{} m {}", minutes, render_seconds_human_readable(seconds_left));
+    else if abs_secs >= 60 {
+        let minutes: i64 = abs_secs / 60;
+        let seconds_left: i64 = abs_secs % 60;
+        abs_output = format!("{} m {}", minutes, render_seconds_human_readable(seconds_left));
     }
     else {
-        return format!("{} s", secs);
+        abs_output = format!("{} s", abs_secs);
     }
-
+    return format!("{}{}", sign_str, abs_output);
 }
 
 pub fn convert_input_to_seconds(input_str: &str) -> Result<i64, String> {
