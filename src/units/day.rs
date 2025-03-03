@@ -271,6 +271,10 @@ impl Day {
         return self.time_to_do;
     }
 
+    pub fn get_time_to_do_secs(&self) -> u64 {
+        return self.time_to_do * 60;
+    }
+
     pub fn get_time_left_secs(&self) -> Option<i64> {
         return match self.get_time_done_secs() {
             Some(td) => Some((self.get_time_to_do() * 60) as i64 - td),
@@ -344,7 +348,7 @@ impl Day {
         }
         summary_str += "\n";
 
-        summary_str += &format!("\nTime to do today: {}", render_seconds_human_readable(self.time_to_do as i64));
+        summary_str += &format!("\nTime to do today: {}", render_seconds_human_readable(self.get_time_to_do_secs() as i64));
         summary_str += &format!("\nTime left to do today: {}", render_seconds_human_readable(time_left));
         if let Some(initial_time_behind) = initial_time_behind_opt {
             let total_time_behind: i64 = initial_time_behind + time_left;
