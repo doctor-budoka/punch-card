@@ -176,7 +176,7 @@ pub fn summary_past(args: Vec<String>) {
         exit(1);
     }
     let day: Day = day_result.expect("Already handled the error case!");
-    if let Err(err_msg) = print_day_summary(day, false) {
+    if let Err(err_msg) = print_day_summary(&day, false) {
         eprintln!("{}", err_msg);
         exit(1);
     }
@@ -207,14 +207,14 @@ pub fn summary(now: &DateTime<Local>, mut day: Day) {
             },
         }
     }
-    if let Err(err_msg) = print_day_summary(day, true) {
+    if let Err(err_msg) = print_day_summary(&day, true) {
         eprintln!("{}", err_msg);
         exit(1);
     }
 }
 
 
-pub fn print_day_summary(day: Day, use_config_for_time_behind: bool) -> Result<(), String> {
+pub fn print_day_summary(day: &Day, use_config_for_time_behind: bool) -> Result<(), String> {
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
         true => {
             let config: Config = get_config();
