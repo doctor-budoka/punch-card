@@ -197,13 +197,15 @@ fn parse_args_for_summary_past(args: Vec<String>) -> Result<NaiveDate, String> {
 }
 
 pub fn summary(now: &DateTime<Local>, mut day: Day) {
-    let end_result: Result<(), &str> = day.end_day_at(&now);
-    match end_result {
-        Ok(_) => (),
-        Err(err_msg) => {
-            eprintln!("Couldn't end day: {}", err_msg);
-            exit(1);
-        },
+    if !day.has_ended() {
+        let end_result: Result<(), &str> = day.end_day_at(&now);
+        match end_result {
+            Ok(_) => (),
+            Err(err_msg) => {
+                eprintln!("Couldn't end day: {}", err_msg);
+                exit(1);
+            },
+        }
     }
     if let Err(err_msg) = print_day_summary(day, true) {
         eprintln!("{}", err_msg);
