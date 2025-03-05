@@ -51,7 +51,12 @@ fn get_default_punch_in_task() -> String {
 
 pub fn punch_out(now: &DateTime<Local>, mut day: Day) {
     if let Ok(_) = day.end_day_at(&now) {
-        println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());
+        println!("Punching out for the day at '{}'", &day.get_day_end_as_str().unwrap().trim());        
+        let summary_result = print_day_summary(&day, true);
+        if let Err(err_msg) = summary_result {
+            eprintln!("{}", err_msg);
+            exit(1);
+        }
         write_day(&day);
         match update_time_behind(day) {
             Ok(()) => (),
@@ -81,7 +86,7 @@ pub fn take_break(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) 
 
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day, true);
+        let summary_result = print_day_summary(&day, true);
         if let Err(err_msg) = summary_result {
             eprintln!("{}", err_msg);
             exit(1);
@@ -118,7 +123,7 @@ pub fn resume(now: &DateTime<Local>, other_args: Vec<String>, mut day: Day) {
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day, true);
+        let summary_result = print_day_summary(&day, true);
         if let Err(err_msg) = summary_result {
             eprintln!("{}", err_msg);
             exit(1);
@@ -158,7 +163,7 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
         config.update_minutes_behind(-seconds_left_before / 60);
         update_config(config);
 
-        let summary_result = print_day_summary(day, true);
+        let summary_result = print_day_summary(&day, true);
         if let Err(err_msg) = summary_result {
             eprintln!("{}", err_msg);
             exit(1);
@@ -193,7 +198,7 @@ pub fn switch_to_new_task(now: &DateTime<Local>, mut day: Day, other_args: Vec<S
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day, true);
+        let summary_result = print_day_summary(&day, true);
         if let Err(err_msg) = summary_result {
             eprintln!("{}", err_msg);
             exit(1);
@@ -304,7 +309,7 @@ pub fn update_current_task_name(now: &DateTime<Local>, mut day: Day, other_args:
         write_day(&day);
         if !day.has_ended() {day.end_day_at(&now).expect("We should be able to end the day");}
 
-        let summary_result = print_day_summary(day, true);
+        let summary_result = print_day_summary(&day, true);
         if let Err(err_msg) = summary_result {
             eprintln!("{}", err_msg);
             exit(1);

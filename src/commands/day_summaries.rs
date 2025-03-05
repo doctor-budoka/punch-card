@@ -176,7 +176,7 @@ pub fn summary_past(args: Vec<String>) {
         exit(1);
     }
     let day: Day = day_result.expect("Already handled the error case!");
-    if let Err(err_msg) = print_day_summary(day, false) {
+    if let Err(err_msg) = print_day_summary(&day, false) {
         eprintln!("{}", err_msg);
         exit(1);
     }
@@ -197,22 +197,24 @@ fn parse_args_for_summary_past(args: Vec<String>) -> Result<NaiveDate, String> {
 }
 
 pub fn summary(now: &DateTime<Local>, mut day: Day) {
-    let end_result: Result<(), &str> = day.end_day_at(&now);
-    match end_result {
-        Ok(_) => (),
-        Err(err_msg) => {
-            eprintln!("Couldn't end day: {}", err_msg);
-            exit(1);
-        },
+    if !day.has_ended() {
+        let end_result: Result<(), &str> = day.end_day_at(&now);
+        match end_result {
+            Ok(_) => (),
+            Err(err_msg) => {
+                eprintln!("Couldn't end day: {}", err_msg);
+                exit(1);
+            },
+        }
     }
-    if let Err(err_msg) = print_day_summary(day, true) {
+    if let Err(err_msg) = print_day_summary(&day, true) {
         eprintln!("{}", err_msg);
         exit(1);
     }
 }
 
 
-pub fn print_day_summary(day: Day, use_config_for_time_behind: bool) -> Result<(), String> {
+pub fn print_day_summary(day: &Day, use_config_for_time_behind: bool) -> Result<(), String> {
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
         true => {
             let config: Config = get_config();
