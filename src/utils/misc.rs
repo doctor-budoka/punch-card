@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 use regex::Regex;
 
-pub fn render_seconds_human_readable(secs: i64) -> String {
+pub fn render_seconds_human_readable(secs: i64, show_times_in_hours: bool) -> String {
     let (sign, sign_str): (i64, &str) = if secs < 0 {(-1, "-")} else {(1, "")};
     let abs_secs: i64 = sign * secs;
     let abs_output: String;
-    if abs_secs >= 60 * 60 {
+    if (abs_secs >= 60 * 60) & show_times_in_hours {
         let hours: i64 = abs_secs / (60 * 60);
         let seconds_left:i64 = abs_secs % (60 * 60);
-        abs_output =  format!("{}h {}", hours, render_seconds_human_readable(seconds_left));
+        abs_output =  format!("{}h {}", hours, render_seconds_human_readable(seconds_left, false));
     }
     else if abs_secs >= 60 {
         let minutes: i64 = abs_secs / 60;
         let seconds_left: i64 = abs_secs % 60;
-        abs_output = format!("{}m {}", minutes, render_seconds_human_readable(seconds_left));
+        abs_output = format!("{}m {}", minutes, render_seconds_human_readable(seconds_left, false));
     }
     else {
         abs_output = format!("{}s", abs_secs);
