@@ -15,6 +15,7 @@ pub struct Config {
     minutes_behind: i64,
     minutes_behind_non_neg: u64,
     editor_path: Option<String>,
+    show_times_in_hours: Option<bool>
 }
 
 impl Config {
@@ -22,7 +23,8 @@ impl Config {
         day_length: i64,
         default_punch_in_task: String,
         default_break_task: String,
-        minutes_behind: i64)
+        minutes_behind: i64,
+        show_times_in_hours: Option<bool>)
         -> Self {
         return Self {
             day_in_minutes: day_length,
@@ -31,6 +33,7 @@ impl Config {
             minutes_behind: minutes_behind,
             minutes_behind_non_neg: if minutes_behind < 0 { 0 } else { minutes_behind } as u64,
             editor_path: Some("vim".to_string()),
+            show_times_in_hours: show_times_in_hours,
         };
     }
 
@@ -107,7 +110,8 @@ pub fn create_default_config_if_not_exists() {
             DEFAULT_TIME_MINS,
             DEFAULT_PUNCH_IN_TASK.to_owned(),
             DEFAULT_BREAK_TASK.to_owned(),
-            0);
+            0,
+            Some(true));
         write_config(&config_path, &default_config);
     }
 }
