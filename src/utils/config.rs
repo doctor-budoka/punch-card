@@ -6,7 +6,7 @@ pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
 const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
 const DEFAULT_BREAK_TASK: &str = "Break";
-pub const SHOW_TIMES_IN_HOURS_DEFAULT: bool = true;
+const SHOW_TIMES_IN_HOURS_DEFAULT: bool = true;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {

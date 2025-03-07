@@ -3,13 +3,13 @@ use std::process::exit;
 
 use crate::units::day::{Day,read_day_from_date_str};
 use crate::units::aggregate_day::AggregateDay;
-use crate::utils::config::{Config, get_config, SHOW_TIMES_IN_HOURS_DEFAULT};
+use crate::utils::config::{Config, get_config};
 use crate::utils::dates_and_times::{get_local_now, DateRange};
 use crate::utils::misc::convert_input_to_seconds;
 
 pub fn summarise_week(args: Vec<String>) {
     let config: Config = get_config();
-    let show_times_in_hours: bool = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
+    let show_times_in_hours: bool = config.show_times_in_hours_or_default();
     match parse_args_for_summarise_week(args) {
         Ok((start_date, end_date, initial_time_behind_opt)) => {
             summarise_date_range(start_date, end_date, initial_time_behind_opt, show_times_in_hours);
@@ -49,7 +49,7 @@ fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(NaiveDate, NaiveD
 
 pub fn summarise_days(args: Vec<String>) {
     let config: Config = get_config();
-    let show_times_in_hours: bool = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
+    let show_times_in_hours: bool = config.show_times_in_hours_or_default();
     match parse_args_for_summarise_days(args) {
         Ok((start_date, end_date, initial_time_behind_opt)) => {
             summarise_date_range(start_date, end_date, initial_time_behind_opt, show_times_in_hours)
@@ -221,7 +221,7 @@ pub fn summary(now: &DateTime<Local>, mut day: Day) {
 
 pub fn print_day_summary(day: &Day, use_config_for_time_behind: bool) -> Result<(), String> {
     let config: Config = get_config();
-    let show_times_in_hours  = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
+    let show_times_in_hours  = config.show_times_in_hours_or_default();
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
         true => {
             Some(config.minutes_behind() * 60)
