@@ -116,7 +116,7 @@ pub fn create_default_config_if_not_exists() {
             DEFAULT_PUNCH_IN_TASK.to_owned(),
             DEFAULT_BREAK_TASK.to_owned(),
             0,
-            Some(true));
+            Some(SHOW_TIMES_IN_HOURS_DEFAULT));
         write_config(&config_path, &default_config);
     }
 }
