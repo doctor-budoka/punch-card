@@ -14,6 +14,7 @@ pub struct Config {
     default_punch_in_task: String,
     default_break_task: String,
     minutes_behind: i64,
+    seconds_behind_in_addition: Option<i64>,
     minutes_behind_non_neg: u64,
     editor_path: Option<String>,
     show_times_in_hours: Option<bool>
@@ -25,6 +26,7 @@ impl Config {
         default_punch_in_task: String,
         default_break_task: String,
         minutes_behind: i64,
+        seconds_behind_in_addition: Option<i64>,
         show_times_in_hours: Option<bool>)
         -> Self {
         return Self {
@@ -32,6 +34,7 @@ impl Config {
             default_punch_in_task: default_punch_in_task,
             default_break_task: default_break_task,
             minutes_behind: minutes_behind,
+            seconds_behind_in_addition: seconds_behind_in_addition,
             minutes_behind_non_neg: if minutes_behind < 0 { 0 } else { minutes_behind } as u64,
             editor_path: Some("vim".to_string()),
             show_times_in_hours: show_times_in_hours,
@@ -67,12 +70,27 @@ impl Config {
         return self.show_times_in_hours.unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT); 
     }
 
+    pub fn get_seconds_behind(&self) -> i64 {
+        let minutes_behind: i64 = self.minutes_behind;
+        let seconds_in_addition: i64 = self.seconds_behind_in_addition.unwrap_or(0);
+        return minutes_behind * 60 + seconds_in_addition;
+    }
+
+    pub fn update_time_behind(&mut self, delta_secs: i64) {
+        let current_time_behind: i64 = self.get_seconds_behind();
+        let new_total_seconds_behind: i64 = current_time_behind + delta_secs;
+        let sign: i64 = new_total_seconds_behind.signum();
+        let abs_seconds_behind: i64 = new_total_seconds_behind.abs();
+        let new_minutes_behind: i64 = abs_seconds_behind / 60;
+        let new_seconds_in_addition: i64 = new_total_seconds_behind % 60;
+        self.minutes_behind = sign * new_minutes_behind;
+        self.seconds_behind_in_addition = Some(sign * new_seconds_in_addition);
+    }
+
     pub fn update_minutes_behind(&mut self, delta: i64) {
         let true_time_behind: i64 = self.minutes_behind() + delta;
-        let non_neg_time_behind: i64 = self.minutes_behind_non_neg() as i64 + delta;
-        let new_non_neg_time_behind: u64 = if true_time_behind < 0 || non_neg_time_behind < 0 { 0 } else { non_neg_time_behind } as u64;
         self.minutes_behind = true_time_behind;
-        self.minutes_behind_non_neg = new_non_neg_time_behind;
+        self.minutes_behind_non_neg = 0;
     }
 }
 
@@ -116,6 +134,7 @@ pub fn create_default_config_if_not_exists() {
             DEFAULT_PUNCH_IN_TASK.to_owned(),
             DEFAULT_BREAK_TASK.to_owned(),
             0,
+            Some(0),
             Some(SHOW_TIMES_IN_HOURS_DEFAULT));
         write_config(&config_path, &default_config);
     }
