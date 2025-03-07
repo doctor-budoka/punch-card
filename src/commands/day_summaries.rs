@@ -110,7 +110,7 @@ pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_
         }
         let mut this_day: Day = this_day_result.expect("Already handled error!");
         if !this_day.has_ended() && (local_date == todays_date) {
-            match this_day.end_day_at(&local_now) {
+            match this_day.end_day_at(&local_now, false) {
                 Ok(()) => (),
                 Err(err_msg) => {
                     eprintln!("Failed to end today: {err_msg}");
@@ -203,7 +203,7 @@ fn parse_args_for_summary_past(args: Vec<String>) -> Result<NaiveDate, String> {
 
 pub fn summary(now: &DateTime<Local>, mut day: Day) {
     if !day.has_ended() {
-        let end_result: Result<(), &str> = day.end_day_at(&now);
+        let end_result: Result<(), &str> = day.end_day_at(&now, false);
         match end_result {
             Ok(_) => (),
             Err(err_msg) => {

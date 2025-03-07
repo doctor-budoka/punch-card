@@ -26,7 +26,7 @@ use crate::commands::day_summaries::{summary, summary_past, summarise_week, summ
 use crate::utils::file_io::create_base_dir_if_not_exists;
 use crate::utils::config::create_default_config_if_not_exists;
 
-const VERSION: &str = "2.5.1";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 
 #[derive(PartialEq,Clone)]
@@ -167,7 +167,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     let day: Day = possible_day.unwrap();
 
     match command {
-        SubCommand::Out(_) => punch_out(&now, day),
+        SubCommand::Out(other_args) => punch_out(&now, day, other_args),
         SubCommand::BackIn(other_args) => punch_back_in(&now, other_args, day),
         SubCommand::Pause(other_args) => take_break(&now, other_args, day),
         SubCommand::Resume(other_args) => resume(&now, other_args, day),

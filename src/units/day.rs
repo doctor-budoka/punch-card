@@ -29,11 +29,12 @@ pub struct Day {
     breaks: Vec<usize>,
     pub on_break: bool,
     pub time_to_do: u64,
+    pub time_to_do_seconds_in_addition: Option<u64>,
     pub summaries: Vec<WorkSummary>,
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64) -> Self {
+    pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64, time_to_do_seconds_in_addition: Option<u64>) -> Self {
         let initial_block: TimeBlock = TimeBlock::new(initial_task.clone(), start);
         return Self {
             overall_interval: Interval::new(start),
@@ -42,15 +43,23 @@ impl Day {
             breaks: Vec::new(),
             on_break: false, 
             time_to_do: time_to_do,
+            time_to_do_seconds_in_addition: time_to_do_seconds_in_addition,
             summaries: Vec::new(),
         };
     }
 
-    pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
+    pub fn end_day_at(&mut self, at: &DateTime<Local>, time_to_do_done: bool) -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't end the day because the day has already ended!");
         }
         self.overall_interval.end_at(at);
+        if time_to_do_done {
+            let total_time_done: u64 = self.get_time_done_secs().unwrap() as u64;
+            let minutes_done: u64 = total_time_done / 60;
+            let seconds_in_addition_done: u64 = total_time_done % 60;
+            self.time_to_do = minutes_done;
+            self.time_to_do_seconds_in_addition = Some(seconds_in_addition_done);
+        }
         let block_result: Result<(), &str> = self.end_current_block_at(at);
         match block_result {
             Ok(_) => return Ok(()),
@@ -267,17 +276,13 @@ impl Day {
         };
     }
 
-    pub fn get_time_to_do(&self) -> u64 {
-        return self.time_to_do;
-    }
-
     pub fn get_time_to_do_secs(&self) -> u64 {
-        return self.time_to_do * 60;
+        return self.time_to_do * 60 + self.time_to_do_seconds_in_addition.unwrap_or(0);
     }
 
     pub fn get_time_left_secs(&self) -> Option<i64> {
         return match self.get_time_done_secs() {
-            Some(td) => Some((self.get_time_to_do() * 60) as i64 - td),
+            Some(td) => Some((self.get_time_to_do_secs()) as i64 - td),
             None => None,
         }
     }
