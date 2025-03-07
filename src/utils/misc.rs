@@ -5,7 +5,7 @@ pub fn render_seconds_human_readable(secs: i64, show_times_in_hours: bool) -> St
     let (sign, sign_str): (i64, &str) = if secs < 0 {(-1, "-")} else {(1, "")};
     let abs_secs: i64 = sign * secs;
     let abs_output: String;
-    if (abs_secs >= 60 * 60) & show_times_in_hours {
+    if show_times_in_hours & (abs_secs >= 60 * 60) {
         let hours: i64 = abs_secs / (60 * 60);
         let seconds_left:i64 = abs_secs % (60 * 60);
         abs_output =  format!("{}h {}", hours, render_seconds_human_readable(seconds_left, false));
