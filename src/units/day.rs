@@ -48,11 +48,18 @@ impl Day {
         };
     }
 
-    pub fn end_day_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
+    pub fn end_day_at(&mut self, at: &DateTime<Local>, time_to_do_done: bool) -> Result<(), &str> {
         if self.has_ended() {
             return Err("Can't end the day because the day has already ended!");
         }
         self.overall_interval.end_at(at);
+        if time_to_do_done {
+            let total_time_done = self.get_time_done_secs();
+            let minutes_done = total_time_done / 60;
+            let seconds_in_addition_done = total_time_done % 60;
+            self.time_to_do = minutes_done;
+            self.time_to_do_seconds_in_addition = Some(seconds_in_addition_done);
+        }
         let block_result: Result<(), &str> = self.end_current_block_at(at);
         match block_result {
             Ok(_) => return Ok(()),
