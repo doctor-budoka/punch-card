@@ -276,10 +276,6 @@ impl Day {
         };
     }
 
-    pub fn get_time_to_do(&self) -> u64 {
-        return self.time_to_do;
-    }
-
     pub fn get_time_to_do_secs(&self) -> u64 {
         return self.time_to_do * 60 + self.time_to_do_seconds_in_addition.unwrap_or(0);
     }
