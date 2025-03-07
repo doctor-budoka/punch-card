@@ -6,6 +6,7 @@ pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
 const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
 const DEFAULT_BREAK_TASK: &str = "Break";
+const SHOW_TIMES_IN_HOURS_DEFAULT: bool = true;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -15,6 +16,7 @@ pub struct Config {
     minutes_behind: i64,
     minutes_behind_non_neg: u64,
     editor_path: Option<String>,
+    show_times_in_hours: Option<bool>
 }
 
 impl Config {
@@ -22,7 +24,8 @@ impl Config {
         day_length: i64,
         default_punch_in_task: String,
         default_break_task: String,
-        minutes_behind: i64)
+        minutes_behind: i64,
+        show_times_in_hours: Option<bool>)
         -> Self {
         return Self {
             day_in_minutes: day_length,
@@ -31,6 +34,7 @@ impl Config {
             minutes_behind: minutes_behind,
             minutes_behind_non_neg: if minutes_behind < 0 { 0 } else { minutes_behind } as u64,
             editor_path: Some("vim".to_string()),
+            show_times_in_hours: show_times_in_hours,
         };
     }
 
@@ -58,6 +62,10 @@ impl Config {
         return self.minutes_behind_non_neg;
     }
     pub fn editor_path(&self) -> Option<&String> { return self.editor_path.as_ref(); }
+
+    pub fn show_times_in_hours_or_default(&self) -> bool { 
+        return self.show_times_in_hours.unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT); 
+    }
 
     pub fn update_minutes_behind(&mut self, delta: i64) {
         let true_time_behind: i64 = self.minutes_behind() + delta;
@@ -107,7 +115,8 @@ pub fn create_default_config_if_not_exists() {
             DEFAULT_TIME_MINS,
             DEFAULT_PUNCH_IN_TASK.to_owned(),
             DEFAULT_BREAK_TASK.to_owned(),
-            0);
+            0,
+            Some(SHOW_TIMES_IN_HOURS_DEFAULT));
         write_config(&config_path, &default_config);
     }
 }
