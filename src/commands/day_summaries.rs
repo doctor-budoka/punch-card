@@ -220,14 +220,15 @@ pub fn summary(now: &DateTime<Local>, mut day: Day) {
 
 
 pub fn print_day_summary(day: &Day, use_config_for_time_behind: bool) -> Result<(), String> {
+    let config: Config = get_config();
+    let show_times_in_hours  = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
         true => {
-            let config: Config = get_config();
             Some(config.minutes_behind() * 60)
         },
         false => None,
     };
-    let summary_result: Result<String, String> = day.render_human_readable_summary(time_behind_opt);
+    let summary_result: Result<String, String> = day.render_human_readable_summary(time_behind_opt, show_times_in_hours);
     
     return match summary_result {
         Ok(summary_str) => {

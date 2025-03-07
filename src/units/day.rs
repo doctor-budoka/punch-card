@@ -312,7 +312,7 @@ impl Day {
         return task_name_vec;
     }
 
-    pub fn render_human_readable_summary(&self, initial_time_behind_opt: Option<i64>) -> Result<String, String> {
+    pub fn render_human_readable_summary(&self, initial_time_behind_opt: Option<i64>, show_times_in_hours: bool) -> Result<String, String> {
         if !self.has_ended() {
             return Err("Can't summarise a day before it has ended!".to_string())
         }
@@ -327,11 +327,11 @@ impl Day {
         let time_done_secs: i64 = self.get_time_done_secs().unwrap();
 
         let mut summary_str: String = format!(
-            "Total time (from punch in to punch out): {}", render_seconds_human_readable(day_length)
+            "Total time (from punch in to punch out): {}", render_seconds_human_readable(day_length, show_times_in_hours)
         );
-        summary_str += &format!("\nTime done today: {}", render_seconds_human_readable(time_done_secs));
+        summary_str += &format!("\nTime done today: {}", render_seconds_human_readable(time_done_secs, show_times_in_hours));
         summary_str += &format!(
-            "\nTime spent on break: {}", render_seconds_human_readable(break_time)
+            "\nTime spent on break: {}", render_seconds_human_readable(break_time, show_times_in_hours)
         );
         summary_str += "\n";
 
@@ -344,15 +344,15 @@ impl Day {
         summary_str += &format!("\nTask times, blocks:");
         for task_name in self.get_tasks_in_chronological_order() {
             let (time, blocks) = task_summaries.get(&task_name).unwrap();
-            summary_str += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(*time), blocks);
+            summary_str += &format!("\n\t{}: {}, {} blocks", task_name, render_seconds_human_readable(*time, show_times_in_hours), blocks);
         }
         summary_str += "\n";
 
-        summary_str += &format!("\nTime to do today: {}", render_seconds_human_readable(self.get_time_to_do_secs() as i64));
-        summary_str += &format!("\nTime left to do today: {}", render_seconds_human_readable(time_left));
+        summary_str += &format!("\nTime to do today: {}", render_seconds_human_readable(self.get_time_to_do_secs() as i64, show_times_in_hours));
+        summary_str += &format!("\nTime left to do today: {}", render_seconds_human_readable(time_left, show_times_in_hours));
         if let Some(initial_time_behind) = initial_time_behind_opt {
             let total_time_behind: i64 = initial_time_behind + time_left;
-            summary_str += &format!("\nTime behind overall: {}", render_seconds_human_readable(total_time_behind));
+            summary_str += &format!("\nTime behind overall: {}", render_seconds_human_readable(total_time_behind, show_times_in_hours));
         }
         return Ok(summary_str);
     }
