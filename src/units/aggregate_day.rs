@@ -35,7 +35,7 @@ impl AggregateDay {
         self.total_time += day.get_day_length_secs().expect("Day has ended so day length should be known.") as u64;
         self.total_break_time += day.get_total_break_time_secs().expect("Day has ended so day length should be known.") as u64;
         self.num_breaks += day.get_number_of_breaks().expect("Day has ended so day length should be known.");
-        self.total_time_to_do += day.get_time_to_do();
+        self.total_time_to_do += day.get_time_to_do_secs();
         self.num_days += 1;
 
         let task_summaries: HashMap<String, (i64, u64)> = day.get_task_times_secs_and_num_blocks();
