@@ -167,7 +167,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
     let day: Day = possible_day.unwrap();
 
     match command {
-        SubCommand::Out(_) => punch_out(&now, day),
+        SubCommand::Out(other_args) => punch_out(&now, day, other_args),
         SubCommand::BackIn(other_args) => punch_back_in(&now, other_args, day),
         SubCommand::Pause(other_args) => take_break(&now, other_args, day),
         SubCommand::Resume(other_args) => resume(&now, other_args, day),

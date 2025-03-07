@@ -54,9 +54,9 @@ impl Day {
         }
         self.overall_interval.end_at(at);
         if time_to_do_done {
-            let total_time_done = self.get_time_done_secs();
-            let minutes_done = total_time_done / 60;
-            let seconds_in_addition_done = total_time_done % 60;
+            let total_time_done: u64 = self.get_time_done_secs().unwrap() as u64;
+            let minutes_done: u64 = total_time_done / 60;
+            let seconds_in_addition_done: u64 = total_time_done % 60;
             self.time_to_do = minutes_done;
             self.time_to_do_seconds_in_addition = Some(seconds_in_addition_done);
         }
