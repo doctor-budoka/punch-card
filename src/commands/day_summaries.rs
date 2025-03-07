@@ -3,14 +3,16 @@ use std::process::exit;
 
 use crate::units::day::{Day,read_day_from_date_str};
 use crate::units::aggregate_day::AggregateDay;
-use crate::utils::config::{Config, get_config};
+use crate::utils::config::{Config, get_config, SHOW_TIMES_IN_HOURS_DEFAULT};
 use crate::utils::dates_and_times::{get_local_now, DateRange};
 use crate::utils::misc::convert_input_to_seconds;
 
 pub fn summarise_week(args: Vec<String>) {
+    let config: Config = get_config();
+    let show_times_in_hours: bool = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
     match parse_args_for_summarise_week(args) {
         Ok((start_date, end_date, initial_time_behind_opt)) => {
-            summarise_date_range(start_date, end_date, initial_time_behind_opt)
+            summarise_date_range(start_date, end_date, initial_time_behind_opt, show_times_in_hours);
         },
         Err(msg) => {
             eprintln!("{}", msg);
@@ -46,9 +48,11 @@ fn parse_args_for_summarise_week(args: Vec<String>) -> Result<(NaiveDate, NaiveD
 }
 
 pub fn summarise_days(args: Vec<String>) {
+    let config: Config = get_config();
+    let show_times_in_hours: bool = config.show_times_in_hours().unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
     match parse_args_for_summarise_days(args) {
         Ok((start_date, end_date, initial_time_behind_opt)) => {
-            summarise_date_range(start_date, end_date, initial_time_behind_opt)
+            summarise_date_range(start_date, end_date, initial_time_behind_opt, show_times_in_hours)
         },
         Err(msg) => {
             eprintln!("{}", msg);
@@ -87,7 +91,7 @@ fn parse_args_for_summarise_days(args: Vec<String>) -> Result<(NaiveDate, NaiveD
     return Ok((naive_start_date, naive_end_date, initial_time_behind_opt))
 }
 
-pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_time_behind_opt: Option<i64>) {
+pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_time_behind_opt: Option<i64>, show_times_in_hours: bool) {
     let seed_time: i64 = initial_time_behind_opt.unwrap_or(0);
     let mut aggregated: AggregateDay = AggregateDay::new(seed_time);
 
@@ -131,7 +135,8 @@ pub fn summarise_date_range(start_date: NaiveDate, end_date: NaiveDate, initial_
     if days_not_ended.len() > 0 {
         println!("Days not ended: {}", render_list_of_dates_for_user_info(&days_not_ended));
     }
-    let print_result: Result<(), String> = print_aggregated_day_summary(&aggregated, initial_time_behind_opt.is_some());
+    let print_result: Result<(), String> = print_aggregated_day_summary(
+        &aggregated, initial_time_behind_opt.is_some(), show_times_in_hours);
     if let Err(err_msg) = print_result {
         eprintln!("{}", err_msg);
         exit(1);
@@ -151,8 +156,8 @@ fn render_list_of_dates_for_user_info(dates: &Vec<String>) -> String {
     }
 }
 
-pub fn print_aggregated_day_summary(aggregate_day: &AggregateDay, include_overall_time_behind: bool) -> Result<(), String> {
-    let summary_result: Result<String, String> = aggregate_day.render_human_readable_summary(include_overall_time_behind);    
+pub fn print_aggregated_day_summary(aggregate_day: &AggregateDay, include_overall_time_behind: bool, show_times_in_hours: bool) -> Result<(), String> {
+    let summary_result: Result<String, String> = aggregate_day.render_human_readable_summary(include_overall_time_behind, show_times_in_hours);    
     return match summary_result {
         Ok(summary_str) => {
             println!("{}", summary_str);

@@ -6,6 +6,7 @@ pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
 const DEFAULT_PUNCH_IN_TASK: &str = "Starting-up";
 const DEFAULT_BREAK_TASK: &str = "Break";
+pub const SHOW_TIMES_IN_HOURS_DEFAULT: bool = true;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -61,6 +62,12 @@ impl Config {
         return self.minutes_behind_non_neg;
     }
     pub fn editor_path(&self) -> Option<&String> { return self.editor_path.as_ref(); }
+
+    pub fn show_times_in_hours(&self) -> Option<bool> { return self.show_times_in_hours; }
+
+    pub fn show_times_in_hours_or_default(&self) -> Option<bool> { 
+        return self.show_times_in_hours.unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT); 
+    }
 
     pub fn update_minutes_behind(&mut self, delta: i64) {
         let true_time_behind: i64 = self.minutes_behind() + delta;
