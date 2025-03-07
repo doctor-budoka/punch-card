@@ -26,7 +26,7 @@ use crate::commands::day_summaries::{summary, summary_past, summarise_week, summ
 use crate::utils::file_io::create_base_dir_if_not_exists;
 use crate::utils::config::create_default_config_if_not_exists;
 
-const VERSION: &str = "2.5.1";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 
 #[derive(PartialEq,Clone)]
