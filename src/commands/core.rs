@@ -355,7 +355,7 @@ fn update_time_behind(day: Day) -> Result<(), String> {
     if day.has_ended() {
         let mut config: Config = get_config();
         let time_left: i64 = day.get_time_left_secs().expect("Day is over so we should have a time left!");
-        config.update_minutes_behind(time_left / 60);
+        config.update_time_behind(time_left);
         update_config(config);
         return Ok(());
     }
