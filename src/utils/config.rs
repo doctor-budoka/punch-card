@@ -65,7 +65,7 @@ impl Config {
 
     pub fn show_times_in_hours(&self) -> Option<bool> { return self.show_times_in_hours; }
 
-    pub fn show_times_in_hours_or_default(&self) -> Option<bool> { 
+    pub fn show_times_in_hours_or_default(&self) -> bool { 
         return self.show_times_in_hours.unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT); 
     }
 
