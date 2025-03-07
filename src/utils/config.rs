@@ -61,9 +61,6 @@ impl Config {
         return self.minutes_behind;
     }
 
-    pub fn minutes_behind_non_neg(&self) -> u64 {
-        return self.minutes_behind_non_neg;
-    }
     pub fn editor_path(&self) -> Option<&String> { return self.editor_path.as_ref(); }
 
     pub fn show_times_in_hours_or_default(&self) -> bool { 
