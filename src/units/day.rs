@@ -29,11 +29,12 @@ pub struct Day {
     breaks: Vec<usize>,
     pub on_break: bool,
     pub time_to_do: u64,
+    pub time_to_do_seconds_in_addition: Option<u64>,
     pub summaries: Vec<WorkSummary>,
 }
 
 impl Day {
-    pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64) -> Self {
+    pub fn new(start: &DateTime<Local>, initial_task: String, time_to_do: u64, time_to_do_seconds_in_addition: Option<u64>) -> Self {
         let initial_block: TimeBlock = TimeBlock::new(initial_task.clone(), start);
         return Self {
             overall_interval: Interval::new(start),
@@ -42,6 +43,7 @@ impl Day {
             breaks: Vec::new(),
             on_break: false, 
             time_to_do: time_to_do,
+            time_to_do_seconds_in_addition: time_to_do_seconds_in_addition,
             summaries: Vec::new(),
         };
     }
@@ -272,12 +274,12 @@ impl Day {
     }
 
     pub fn get_time_to_do_secs(&self) -> u64 {
-        return self.time_to_do * 60;
+        return self.time_to_do * 60 + self.time_to_do_seconds_in_addition.unwrap_or(0);
     }
 
     pub fn get_time_left_secs(&self) -> Option<i64> {
         return match self.get_time_done_secs() {
-            Some(td) => Some((self.get_time_to_do() * 60) as i64 - td),
+            Some(td) => Some((self.get_time_to_do_secs()) as i64 - td),
             None => None,
         }
     }

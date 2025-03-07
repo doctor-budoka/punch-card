@@ -17,7 +17,7 @@ pub fn punch_in(now: &DateTime<Local>, other_args: Vec<String>) {
     }
     else{
         let parsed_args: (String, u64) = get_other_args_for_punch_in(other_args);
-        let new_day: Day = Day::new(&now, parsed_args.0, parsed_args.1);
+        let new_day: Day = Day::new(&now, parsed_args.0, parsed_args.1, None);
         println!("Clocking in for the day at '{}'", &new_day.get_day_start_as_str());
         write_day(&new_day);
     }
