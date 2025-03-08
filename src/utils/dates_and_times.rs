@@ -15,7 +15,6 @@ impl Iterator for DateRange {
     }
 }
 
-
 pub fn get_local_now() -> DateTime<Local> {
     return Local::now();
 }

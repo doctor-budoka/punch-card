@@ -1,21 +1,27 @@
-use std::collections::HashMap;
 use regex::Regex;
+use std::collections::HashMap;
 
 pub fn render_seconds_human_readable(secs: i64, show_times_in_hours: bool) -> String {
-    let (sign, sign_str): (i64, &str) = if secs < 0 {(-1, "-")} else {(1, "")};
+    let (sign, sign_str): (i64, &str) = if secs < 0 { (-1, "-") } else { (1, "") };
     let abs_secs: i64 = sign * secs;
     let abs_output: String;
     if show_times_in_hours & (abs_secs >= 60 * 60) {
         let hours: i64 = abs_secs / (60 * 60);
-        let seconds_left:i64 = abs_secs % (60 * 60);
-        abs_output =  format!("{}h {}", hours, render_seconds_human_readable(seconds_left, false));
-    }
-    else if abs_secs >= 60 {
+        let seconds_left: i64 = abs_secs % (60 * 60);
+        abs_output = format!(
+            "{}h {}",
+            hours,
+            render_seconds_human_readable(seconds_left, false)
+        );
+    } else if abs_secs >= 60 {
         let minutes: i64 = abs_secs / 60;
         let seconds_left: i64 = abs_secs % 60;
-        abs_output = format!("{}m {}", minutes, render_seconds_human_readable(seconds_left, false));
-    }
-    else {
+        abs_output = format!(
+            "{}m {}",
+            minutes,
+            render_seconds_human_readable(seconds_left, false)
+        );
+    } else {
         abs_output = format!("{}s", abs_secs);
     }
     return format!("{}{}", sign_str, abs_output);
@@ -39,7 +45,7 @@ pub fn convert_input_to_seconds(input_str: &str) -> Result<i64, String> {
 
     let units_to_secs: HashMap<&str, i64> = HashMap::from([("h", 60 * 60), ("m", 60), ("s", 1)]);
     let re = Regex::new(r"(\d+)([hms])").unwrap();
-    let sign: i64 = if rest.starts_with('-') {-1} else {1};
+    let sign: i64 = if rest.starts_with('-') { -1 } else { 1 };
     for (_, [amount, unit]) in re.captures_iter(&rest).map(|c| c.extract()) {
         let parse_result = amount.parse::<i64>();
         if let Err(_) = parse_result {

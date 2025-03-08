@@ -1,35 +1,23 @@
+use chrono::prelude::{DateTime, Local};
 use std::env::args;
 use std::process::exit;
-use chrono::prelude::{DateTime, Local};
 
 mod commands;
 mod units;
 mod utils;
-use crate::units::day::{create_daily_dir_if_not_exists,get_current_day,Day};
 use crate::commands::core::{
-    punch_in,
-    punch_out,
-    punch_back_in,
-    take_break,
-    resume,
-    view_day,
-    view_past,
-    edit_day,
-    switch_to_new_task,
-    update_current_task_name,
-    add_note_to_today,
-    add_summary_to_today,
-    view_config,
-    edit_config,
+    add_note_to_today, add_summary_to_today, edit_config, edit_day, punch_back_in, punch_in,
+    punch_out, resume, switch_to_new_task, take_break, update_current_task_name, view_config,
+    view_day, view_past,
 };
-use crate::commands::day_summaries::{summary, summary_past, summarise_week, summarise_days};
-use crate::utils::file_io::create_base_dir_if_not_exists;
+use crate::commands::day_summaries::{summarise_days, summarise_week, summary, summary_past};
+use crate::units::day::{create_daily_dir_if_not_exists, get_current_day, Day};
 use crate::utils::config::create_default_config_if_not_exists;
+use crate::utils::file_io::create_base_dir_if_not_exists;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-
-#[derive(PartialEq,Clone)]
+#[derive(PartialEq, Clone)]
 enum SubCommand {
     In(Vec<String>),
     Out(Vec<String>),
@@ -76,9 +64,9 @@ impl SubCommand {
             "update-task" => Self::UpdateTask(other_args),
             "version" | "-v" | "--version" => Self::Version(other_args),
             other => Self::Invalid(other.to_string()),
-        }
+        };
     }
-    
+
     fn to_string(self) -> String {
         return match self {
             Self::In(_) => "in",
@@ -101,18 +89,36 @@ impl SubCommand {
             Self::UpdateTask(_) => "update-task",
             Self::Version(_) => "version",
             Self::Invalid(_) => "invalid",
-        }.to_string();
+        }
+        .to_string();
     }
 
     fn get_allowed_strings() -> Vec<String> {
         return Vec::from(
             [
-                "in", "out", "back-in", "pause", "resume", "summary", "summary-past",
-                "summarise-week", "summarise-days", "view", "view-past", "edit",
-                "task", "note", "edit-config", "add-summary", "update-task",
-                "version", "-v", "--version"
-            ].map(|x: &str| x.to_string())
-        )
+                "in",
+                "out",
+                "back-in",
+                "pause",
+                "resume",
+                "summary",
+                "summary-past",
+                "summarise-week",
+                "summarise-days",
+                "view",
+                "view-past",
+                "edit",
+                "task",
+                "note",
+                "edit-config",
+                "add-summary",
+                "update-task",
+                "version",
+                "-v",
+                "--version",
+            ]
+            .map(|x: &str| x.to_string()),
+        );
     }
 }
 
@@ -153,7 +159,7 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
         SubCommand::ViewConfig(_) => view_config(),
         SubCommand::SummariseWeek(other_args) => summarise_week(other_args),
         SubCommand::SummariseDays(other_args) => summarise_days(other_args),
-        _ => {processed = false},
+        _ => processed = false,
     }
     if processed {
         exit(0);
@@ -178,13 +184,21 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
         SubCommand::Note(other_args) => add_note_to_today(&now, day, other_args),
         SubCommand::AddSummary(other_args) => add_summary_to_today(day, other_args),
         SubCommand::UpdateTask(other_args) => update_current_task_name(&now, day, other_args),
-        SubCommand::Version(_) => unreachable!("`punch version/--version/-v` commands should already be processed."),
-        _ => unreachable!("'punch {}' commands shouldn't be processed here.", command.to_string()),
+        SubCommand::Version(_) => {
+            unreachable!("`punch version/--version/-v` commands should already be processed.")
+        }
+        _ => unreachable!(
+            "'punch {}' commands shouldn't be processed here.",
+            command.to_string()
+        ),
     }
 }
 
 fn handle_invalid_cmd(command: &str) {
-    eprintln!("'{}' is not a valid subcommand for punch. Try one of the following:", command);
+    eprintln!(
+        "'{}' is not a valid subcommand for punch. Try one of the following:",
+        command
+    );
     for str_subcommand in SubCommand::get_allowed_strings() {
         eprintln!("\t{}", str_subcommand);
     }

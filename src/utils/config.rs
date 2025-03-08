@@ -1,6 +1,8 @@
-use serde::{Serialize, Deserialize};
+use crate::utils::file_io::{
+    expand_path, read_file, write_file, FromString, SafeFileEdit, ToFile, BASE_DIR,
+};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
-use crate::utils::file_io::{expand_path, write_file, read_file, BASE_DIR, FromString, ToFile, SafeFileEdit};
 
 pub const CONFIG_FILE: &str = "punch.cfg";
 const DEFAULT_TIME_MINS: i64 = 480;
@@ -17,7 +19,7 @@ pub struct Config {
     seconds_behind_in_addition: Option<i64>,
     minutes_behind_non_neg: u64,
     editor_path: Option<String>,
-    show_times_in_hours: Option<bool>
+    show_times_in_hours: Option<bool>,
 }
 
 impl Config {
@@ -27,15 +29,19 @@ impl Config {
         default_break_task: String,
         minutes_behind: i64,
         seconds_behind_in_addition: Option<i64>,
-        show_times_in_hours: Option<bool>)
-        -> Self {
+        show_times_in_hours: Option<bool>,
+    ) -> Self {
         return Self {
             day_in_minutes: day_length,
             default_punch_in_task: default_punch_in_task,
             default_break_task: default_break_task,
             minutes_behind: minutes_behind,
             seconds_behind_in_addition: seconds_behind_in_addition,
-            minutes_behind_non_neg: if minutes_behind < 0 { 0 } else { minutes_behind } as u64,
+            minutes_behind_non_neg: if minutes_behind < 0 {
+                0
+            } else {
+                minutes_behind
+            } as u64,
             editor_path: Some("vim".to_string()),
             show_times_in_hours: show_times_in_hours,
         };
@@ -61,10 +67,14 @@ impl Config {
         return self.minutes_behind;
     }
 
-    pub fn editor_path(&self) -> Option<&String> { return self.editor_path.as_ref(); }
+    pub fn editor_path(&self) -> Option<&String> {
+        return self.editor_path.as_ref();
+    }
 
-    pub fn show_times_in_hours_or_default(&self) -> bool { 
-        return self.show_times_in_hours.unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT); 
+    pub fn show_times_in_hours_or_default(&self) -> bool {
+        return self
+            .show_times_in_hours
+            .unwrap_or(SHOW_TIMES_IN_HOURS_DEFAULT);
     }
 
     pub fn get_seconds_behind(&self) -> i64 {
@@ -132,7 +142,8 @@ pub fn create_default_config_if_not_exists() {
             DEFAULT_BREAK_TASK.to_owned(),
             0,
             Some(0),
-            Some(SHOW_TIMES_IN_HOURS_DEFAULT));
+            Some(SHOW_TIMES_IN_HOURS_DEFAULT),
+        );
         write_config(&config_path, &default_config);
     }
 }
@@ -146,7 +157,6 @@ pub fn get_config() -> Config {
 pub fn get_config_path() -> String {
     return expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
 }
-
 
 pub fn update_config(config: Config) {
     let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
