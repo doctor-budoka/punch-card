@@ -1,9 +1,9 @@
 use chrono::prelude::{DateTime, Local};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::units::interval::{Dt,Interval};
+use crate::units::interval::{Dt, Interval};
 
-#[derive(Debug,Serialize,Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Note {
     time: Dt,
     msg: String,
@@ -18,7 +18,7 @@ impl Note {
     }
 }
 
-#[derive(Debug,Serialize,Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TimeBlock {
     task_name: String,
     interval: Interval,

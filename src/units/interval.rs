@@ -1,12 +1,11 @@
-use std::fmt::{self};
-use chrono::prelude::{DateTime,Local};
+use chrono::prelude::{DateTime, Local};
 use serde::de;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Visitor;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{self};
 
 pub const DATETIME_FMT: &str = "%Y-%m-%d %H:%M:%S %z";
 pub const DATE_FMT: &str = "%Y-%m-%d";
-
 
 struct DtVisitor;
 
@@ -24,11 +23,11 @@ impl<'de> Visitor<'de> for DtVisitor {
         return match DateTime::parse_from_str(&s, DATETIME_FMT) {
             Ok(time) => Ok(Dt::new(time.with_timezone(&Local))),
             Err(_) => Err(E::custom("Incorrect format for string")),
-        }
+        };
     }
 }
 
-#[derive(Debug,Copy,Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Dt(pub DateTime<Local>);
 
 impl Dt {
@@ -69,7 +68,7 @@ impl<'de> Deserialize<'de> for Dt {
     }
 }
 
-#[derive(Debug,Copy,Clone,Serialize,Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Interval {
     start: Dt,
     end: Option<Dt>,
@@ -77,7 +76,10 @@ pub struct Interval {
 
 impl Interval {
     pub fn new(start: &DateTime<Local>) -> Self {
-        return Self {start: Dt(*start), end: None};
+        return Self {
+            start: Dt(*start),
+            end: None,
+        };
     }
 
     #[allow(dead_code)]
@@ -136,8 +138,8 @@ impl Interval {
     pub fn get_length_secs(&self) -> Option<i64> {
         return match self.get_end() {
             Some(end_time) => Some((end_time.0 - self.start.0).num_seconds()),
-            None => None, 
-        }
+            None => None,
+        };
     }
 
     pub fn get_length_mins(&self) -> Option<i64> {
