@@ -50,26 +50,36 @@ pub fn expand_path(path: &str) -> String {
     };
 }
 
-pub fn edit_file(path: &String) {
+pub fn edit_file(path: &str) {
     let config = get_config();
 
-    let editor =
-        if let Some(vim_path) = config.editor_path() {
-            vim_path.clone()
-        }
-        // Debian/Ubuntu export an EDITOR variable
-        else if let Ok(editor) = env::var("EDITOR") {
-            editor.to_string()
-        } else {
-            "vim".to_string()
-        };
+    let editor = if let Some(vim_path) = config.editor_path() {
+        vim_path.clone()
+    }
+    // Debian/Ubuntu export an EDITOR variable
+    else if let Ok(editor) = env::var("EDITOR") {
+        editor.to_string()
+    } else {
+        "vim".to_string()
+    };
 
+    // Users may want to pass extra arguments to their editor eg: 'gedit -w' (which will open gedit and return to punch when the editor is closed)
+    let mut command = editor.split_whitespace().collect::<Vec<&str>>();
+    command.push(path);
+    
+    let editor = command.first().unwrap();
+    let args = command.iter().skip(1);
+
+    println!("Opening config with '{}'...", editor);
+    
     std::process::Command::new(editor)
-        .arg(path)
+        .args(args)
         .spawn()
         .expect("Error: Failed to run editor, you can set 'editor_path' in the config")
         .wait()
         .expect("Error: Editor returned a non-zero status");
+
+    println!("Editor closed.");
 }
 
 pub trait FromString<T, E> {
@@ -93,9 +103,7 @@ pub trait SafeFileEdit<T: FromString<T, E> + ToFile, E>: ToFile + FromString<T, 
             .output()
             .expect("Failed to create temporary data!");
 
-        println!("Opening config in vim...");
         edit_file(&temp_path);
-        println!("Vim closed.");
         let yaml_str: String = read_file(&temp_path).unwrap();
         let new_result: Result<T, E> = T::try_from_string(&yaml_str);
         match new_result {
