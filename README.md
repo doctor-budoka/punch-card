@@ -26,7 +26,7 @@ The following commands don't require you to have "punched in" for the day yet:
 - `summary-past`: Does the same as `summary` except you can pick some day in the past. It takes as argument a date string in yyyy-mm-dd format.
 - `summarise-week`: This prints a similar summary to the last two commands except it does it for a week's worth of days. Ran without argument, it summarises the last 7 days including today. Otherwise, you can provide it with a single date string argument, which allows you to summarise the week ending on that date. In addition, you can provide it with a second argument that specifies the time behind when starting the week, which adds an extra summary line.
 - `summarise-days`: This does the same as the previous command except you have to specify the start and end dates. If only one date is provided, it will just summarise that one day, if two date strings are provided, it summarises those days (inclusive). You can also provide a third argument indicating the time behind at the start of the period.
-- `edit-config`: Used to edit the configuration file for `punch`. It opens it up
+- `edit-config`: Used to edit the configuration file for `punch`. It opens it up the config file in an editor (vim by default).
 - `view-config`: Used to view the configuration file for `punch`.
 
 The config file will be stored at `~/.punch-card/punch.cfg`. This stores the length of your day in minutes (480 minutes or 8 hours by default) as well as storing how many minutes you have fallen behind.
