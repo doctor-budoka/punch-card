@@ -52,7 +52,7 @@ impl Day {
             return Err("Can't end the day because the day has already ended!");
         }
         self.overall_interval.end_at(at);
-        if time_to_do_done {
+        if time_to_do_done & (self.get_time_left_secs().expect("Day should have already ended") > 0) {
             let total_time_done: u64 = self.get_time_done_secs().unwrap() as u64;
             let minutes_done: u64 = total_time_done / 60;
             let seconds_in_addition_done: u64 = total_time_done % 60;
