@@ -89,7 +89,7 @@ impl Config {
         let sign: i64 = new_total_seconds_behind.signum();
         let abs_seconds_behind: i64 = new_total_seconds_behind.abs();
         let new_minutes_behind: i64 = abs_seconds_behind / 60;
-        let new_seconds_in_addition: i64 = new_total_seconds_behind % 60;
+        let new_seconds_in_addition: i64 = abs_seconds_behind % 60;
         self.minutes_behind = sign * new_minutes_behind;
         self.seconds_behind_in_addition = Some(sign * new_seconds_in_addition);
     }
