@@ -270,7 +270,7 @@ pub fn print_day_summary(day: &Day, use_config_for_time_behind: bool) -> Result<
     let config: Config = get_config();
     let show_times_in_hours = config.show_times_in_hours_or_default();
     let time_behind_opt: Option<i64> = match use_config_for_time_behind {
-        true => Some(config.minutes_behind() * 60),
+        true => Some(config.get_seconds_behind()),
         false => None,
     };
     let summary_result: Result<String, String> =

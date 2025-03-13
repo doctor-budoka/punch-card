@@ -191,7 +191,7 @@ pub fn punch_back_in(now: &DateTime<Local>, other_args: Vec<String>, mut day: Da
                 .expect("We should be able to end the day");
         }
         let mut config: Config = get_config();
-        config.update_minutes_behind(-seconds_left_before / 60);
+        config.update_time_behind(-seconds_left_before);
         update_config(config);
 
         let summary_result = print_day_summary(&day, true);
