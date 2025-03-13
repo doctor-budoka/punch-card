@@ -63,10 +63,6 @@ impl Config {
         return &self.default_break_task;
     }
 
-    pub fn minutes_behind(&self) -> i64 {
-        return self.minutes_behind;
-    }
-
     pub fn editor_path(&self) -> Option<&String> {
         return self.editor_path.as_ref();
     }
@@ -92,12 +88,6 @@ impl Config {
         let new_seconds_in_addition: i64 = abs_seconds_behind % 60;
         self.minutes_behind = sign * new_minutes_behind;
         self.seconds_behind_in_addition = Some(sign * new_seconds_in_addition);
-    }
-
-    pub fn update_minutes_behind(&mut self, delta: i64) {
-        let true_time_behind: i64 = self.minutes_behind() + delta;
-        self.minutes_behind = true_time_behind;
-        self.minutes_behind_non_neg = 0;
     }
 }
 
