@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::units::day::Day;
-use crate::utils::misc::render_seconds_human_readable;
+use crate::user_interaction::human_readable::render_seconds_human_readable;
 
 #[derive(Debug, Clone)]
 pub struct AggregateDay {

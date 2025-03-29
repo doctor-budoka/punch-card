@@ -5,7 +5,7 @@ use crate::units::aggregate_day::AggregateDay;
 use crate::units::day::{read_day_from_date_str, Day};
 use crate::utils::config::{get_config, Config};
 use crate::utils::dates_and_times::{get_local_now, DateRange};
-use crate::utils::misc::convert_input_to_seconds;
+use crate::user_interaction::convert_input::convert_input_to_seconds;
 
 pub fn summarise_week(args: Vec<String>) {
     let config: Config = get_config();

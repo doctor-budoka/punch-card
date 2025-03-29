@@ -3,6 +3,14 @@ name = "punch"
 version = "2.5.3"
 edition = "2021"
 
+[[bin]]
+name = "punch"
+path = "src/main.rs"
+
+[lib]
+name = "punch"
+path = "src/lib.rs"
+
 [dependencies]
 chrono = "0.4.23"
 prettytable-rs = "0.10.0"

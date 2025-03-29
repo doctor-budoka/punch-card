@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::units::components::TimeBlock;
 use crate::units::interval::{Dt, Interval, DATETIME_FMT, DATE_FMT};
-use crate::utils::misc::render_seconds_human_readable;
+use crate::user_interaction::human_readable::render_seconds_human_readable;
 
 use crate::utils::file_io::{
     create_dir_if_not_exists, expand_path, read_file, write_file, FromString, SafeFileEdit, ToFile,
