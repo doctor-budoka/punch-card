@@ -3,6 +3,7 @@ use std::env::args;
 use std::process::exit;
 
 mod commands;
+mod random_generators;
 mod units;
 mod utils;
 mod user_interaction;
