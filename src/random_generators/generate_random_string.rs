@@ -1,6 +1,6 @@
 use rand::{distr::Alphanumeric, Rng};
 
-fn generate_random_string(num_chars: usize) -> String {
+pub fn generate_random_string(num_chars: usize) -> String {
     return rand::rng()
         .sample_iter(&Alphanumeric)
         .take(num_chars)
