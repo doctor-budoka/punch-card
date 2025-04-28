@@ -3,9 +3,10 @@ use std::process::exit;
 
 use crate::units::aggregate_day::AggregateDay;
 use crate::units::day::{read_day_from_date_str, Day};
+use crate::user_interaction::convert_input::convert_input_to_seconds;
+use crate::user_interaction::render_list_for_user::render_list_for_user;
 use crate::utils::config::{get_config, Config};
 use crate::utils::dates_and_times::{get_local_now, DateRange};
-use crate::utils::misc::convert_input_to_seconds;
 
 pub fn summarise_week(args: Vec<String>) {
     let config: Config = get_config();
@@ -159,18 +160,18 @@ pub fn summarise_date_range(
     }
     println!(
         "Days aggregated: {}",
-        render_list_of_dates_for_user_info(&days_aggregated)
+        render_list_for_user(&days_aggregated, None)
     );
     if days_not_there.len() > 0 {
         println!(
             "Days not there: {}",
-            render_list_of_dates_for_user_info(&days_not_there)
+            render_list_for_user(&days_not_there, None)
         );
     }
     if days_not_ended.len() > 0 {
         println!(
             "Days not ended: {}",
-            render_list_of_dates_for_user_info(&days_not_ended)
+            render_list_for_user(&days_not_ended, None)
         );
     }
     let print_result: Result<(), String> = print_aggregated_day_summary(
@@ -181,17 +182,6 @@ pub fn summarise_date_range(
     if let Err(err_msg) = print_result {
         eprintln!("{}", err_msg);
         exit(1);
-    }
-}
-
-fn render_list_of_dates_for_user_info(dates: &Vec<String>) -> String {
-    let max_dates: usize = 5;
-    if dates.len() == max_dates {
-        return "None".to_string();
-    } else if dates.len() <= 5 {
-        return dates.join(", ");
-    } else {
-        return dates[..max_dates].join(", ") + ", ...";
     }
 }
 

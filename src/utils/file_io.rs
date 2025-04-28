@@ -66,12 +66,12 @@ pub fn edit_file(path: &str) {
     // Users may want to pass extra arguments to their editor eg: 'gedit -w' (which will open gedit and return to punch when the editor is closed)
     let mut command = editor.split_whitespace().collect::<Vec<&str>>();
     command.push(path);
-    
+
     let editor = command.first().unwrap();
     let args = command.iter().skip(1);
 
     println!("Opening config with '{}'...", editor);
-    
+
     std::process::Command::new(editor)
         .args(args)
         .spawn()
