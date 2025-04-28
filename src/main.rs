@@ -12,6 +12,7 @@ use crate::commands::core::{
     punch_out, resume, switch_to_new_task, take_break, update_current_task_name, view_config,
     view_day, view_past,
 };
+use crate::commands::daily_task_tables::{daily_tasks, week_in_tasks};
 use crate::commands::day_summaries::{summarise_days, summarise_week, summary, summary_past};
 use crate::units::day::{create_daily_dir_if_not_exists, get_current_day, Day};
 use crate::utils::config::create_default_config_if_not_exists;
@@ -30,6 +31,8 @@ enum SubCommand {
     SummaryPast(Vec<String>),
     SummariseWeek(Vec<String>),
     SummariseDays(Vec<String>),
+    DailyTasks(Vec<String>),
+    WeekInTasks(Vec<String>),
     View(Vec<String>),
     ViewPast(Vec<String>),
     Edit(Vec<String>),
@@ -55,6 +58,8 @@ impl SubCommand {
             "summary-past" => Self::SummaryPast(other_args),
             "summarise-week" => Self::SummariseWeek(other_args),
             "summarise-days" => Self::SummariseDays(other_args),
+            "daily-tasks" => Self::DailyTasks(other_args),
+            "week-in-tasks" => Self::WeekInTasks(other_args),
             "view" => Self::View(other_args),
             "view-past" => Self::ViewPast(other_args),
             "edit" => Self::Edit(other_args),
@@ -80,6 +85,8 @@ impl SubCommand {
             Self::SummaryPast(_) => "summary-past",
             Self::SummariseWeek(_) => "summarise-week",
             Self::SummariseDays(_) => "summarise-days",
+            Self::DailyTasks(_) => "daily-tasks",
+            Self::WeekInTasks(_) => "week-in-tasks",
             Self::View(_) => "view",
             Self::ViewPast(_) => "view-past",
             Self::Edit(_) => "edit",
@@ -107,6 +114,8 @@ impl SubCommand {
                 "summary-past",
                 "summarise-week",
                 "summarise-days",
+                "daily-tasks",
+                "week-in-tasks",
                 "view",
                 "view-past",
                 "edit",
@@ -161,6 +170,8 @@ fn run_command(command: SubCommand, now: DateTime<Local>) {
         SubCommand::ViewConfig(_) => view_config(),
         SubCommand::SummariseWeek(other_args) => summarise_week(other_args),
         SubCommand::SummariseDays(other_args) => summarise_days(other_args),
+        SubCommand::DailyTasks(other_args) => daily_tasks(other_args),
+        SubCommand::WeekInTasks(other_args) => week_in_tasks(other_args),
         _ => processed = false,
     }
     if processed {
