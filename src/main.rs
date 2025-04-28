@@ -5,8 +5,8 @@ use std::process::exit;
 mod commands;
 mod random_generators;
 mod units;
-mod utils;
 mod user_interaction;
+mod utils;
 use crate::commands::core::{
     add_note_to_today, add_summary_to_today, edit_config, edit_day, punch_back_in, punch_in,
     punch_out, resume, switch_to_new_task, take_break, update_current_task_name, view_config,

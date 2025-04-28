@@ -3,10 +3,10 @@ use std::process::exit;
 
 use crate::units::aggregate_day::AggregateDay;
 use crate::units::day::{read_day_from_date_str, Day};
-use crate::utils::config::{get_config, Config};
-use crate::utils::dates_and_times::{get_local_now, DateRange};
 use crate::user_interaction::convert_input::convert_input_to_seconds;
 use crate::user_interaction::render_list_for_user::render_list_for_user;
+use crate::utils::config::{get_config, Config};
+use crate::utils::dates_and_times::{get_local_now, DateRange};
 
 pub fn summarise_week(args: Vec<String>) {
     let config: Config = get_config();
@@ -184,7 +184,6 @@ pub fn summarise_date_range(
         exit(1);
     }
 }
-
 
 pub fn print_aggregated_day_summary(
     aggregate_day: &AggregateDay,

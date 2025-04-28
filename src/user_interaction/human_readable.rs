@@ -9,11 +9,9 @@ pub fn render_seconds_human_readable(secs: i64, show_times_in_hours: bool) -> St
 
     if show_times_in_hours & (abs_secs >= 60 * 60) {
         return format!("{}{}h {}m {}s", sign_str, hours, minutes, seconds);
-    }
-    else if abs_secs >= 60 {
+    } else if abs_secs >= 60 {
         return format!("{}{}m {}s", sign_str, hours * 60 + minutes, seconds);
-    }
-    else {
+    } else {
         return format!("{}{}s", sign_str, seconds);
     }
 }
@@ -29,7 +27,7 @@ mod tests {
         [true, false]
     )]
     fn test_less_than_a_minute(is_positive: bool, seconds: i64, show_times_in_hours: bool) {
-        let test_input: i64 = if is_positive {seconds} else {-seconds};
+        let test_input: i64 = if is_positive { seconds } else { -seconds };
         let out: String = render_seconds_human_readable(test_input, show_times_in_hours);
         assert_eq!(format!("{}s", test_input), out);
     }
@@ -40,10 +38,19 @@ mod tests {
         [1, 3, 7],
         [true, false]
     )]
-    fn test_more_than_a_miute_less_than_an_hour(is_positive: bool, seconds: i64, minutes: i64, show_times_in_hours: bool) {
+    fn test_more_than_a_miute_less_than_an_hour(
+        is_positive: bool,
+        seconds: i64,
+        minutes: i64,
+        show_times_in_hours: bool,
+    ) {
         let total_seconds: i64 = minutes * 60 + seconds;
-        let test_input: i64 = if is_positive {total_seconds} else {-total_seconds};
-        let sign: &str = if is_positive {""} else {"-"};
+        let test_input: i64 = if is_positive {
+            total_seconds
+        } else {
+            -total_seconds
+        };
+        let sign: &str = if is_positive { "" } else { "-" };
         let out: String = render_seconds_human_readable(test_input, show_times_in_hours);
         assert_eq!(format!("{}{}m {}s", sign, minutes, seconds), out);
     }
@@ -54,10 +61,19 @@ mod tests {
         [0, 3, 7],
         [1, 3]
     )]
-    fn test_more_than_an_hour_with_show_times_in_hours(is_positive: bool, seconds: i64, minutes: i64, hours: i64) {
+    fn test_more_than_an_hour_with_show_times_in_hours(
+        is_positive: bool,
+        seconds: i64,
+        minutes: i64,
+        hours: i64,
+    ) {
         let total_seconds: i64 = hours * 60 * 60 + minutes * 60 + seconds;
-        let test_input: i64 = if is_positive {total_seconds} else {-total_seconds};
-        let sign: &str = if is_positive {""} else {"-"};
+        let test_input: i64 = if is_positive {
+            total_seconds
+        } else {
+            -total_seconds
+        };
+        let sign: &str = if is_positive { "" } else { "-" };
         let out: String = render_seconds_human_readable(test_input, true);
         assert_eq!(format!("{}{}h {}m {}s", sign, hours, minutes, seconds), out);
     }
@@ -68,12 +84,23 @@ mod tests {
         [0, 3, 7],
         [1, 3]
     )]
-    fn test_more_than_an_hour_without_show_times_in_hours(is_positive: bool, seconds: i64, minutes: i64, hours: i64) {
+    fn test_more_than_an_hour_without_show_times_in_hours(
+        is_positive: bool,
+        seconds: i64,
+        minutes: i64,
+        hours: i64,
+    ) {
         let total_seconds: i64 = hours * 60 * 60 + minutes * 60 + seconds;
-        let test_input: i64 = if is_positive {total_seconds} else {-total_seconds};
-        let sign: &str = if is_positive {""} else {"-"};
+        let test_input: i64 = if is_positive {
+            total_seconds
+        } else {
+            -total_seconds
+        };
+        let sign: &str = if is_positive { "" } else { "-" };
         let out: String = render_seconds_human_readable(test_input, false);
-        assert_eq!(format!("{}{}m {}s", sign, hours * 60 + minutes, seconds), out);
+        assert_eq!(
+            format!("{}{}m {}s", sign, hours * 60 + minutes, seconds),
+            out
+        );
     }
-
 }

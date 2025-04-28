@@ -30,7 +30,11 @@ mod tests {
         let fail_if_less: usize = 995;
         let str_length: usize = 50;
 
-        let unique_strings: HashSet<String> = HashSet::from_iter((0..num_tries).into_iter().map(|_x| generate_random_string(str_length)));
+        let unique_strings: HashSet<String> = HashSet::from_iter(
+            (0..num_tries)
+                .into_iter()
+                .map(|_x| generate_random_string(str_length)),
+        );
         assert!(unique_strings.len() >= fail_if_less);
     }
 }

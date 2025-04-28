@@ -1,23 +1,19 @@
 use chrono::{DateTime, Duration, Local, NaiveDate};
+use prettytable::{row, Table};
 use std::process::exit;
-use prettytable::{Table, row};
 
 use crate::units::day::{read_day_from_date_str, Day};
-use crate::utils::config::{get_config, Config};
-use crate::utils::dates_and_times::{get_local_now, DateRange};
 use crate::user_interaction::human_readable::render_seconds_human_readable;
 use crate::user_interaction::render_list_for_user::render_list_for_user;
+use crate::utils::config::{get_config, Config};
+use crate::utils::dates_and_times::{get_local_now, DateRange};
 
 pub fn week_in_tasks(args: Vec<String>) {
     let config: Config = get_config();
     let show_times_in_hours: bool = config.show_times_in_hours_or_default();
     match parse_args_for_week_in_tasks(args) {
         Ok((start_date, end_date)) => {
-            print_daily_task_summary_for_date_range(
-                start_date,
-                end_date,
-                show_times_in_hours,
-            );
+            print_daily_task_summary_for_date_range(start_date, end_date, show_times_in_hours);
         }
         Err(msg) => {
             eprintln!("{}", msg);
@@ -26,9 +22,7 @@ pub fn week_in_tasks(args: Vec<String>) {
     }
 }
 
-fn parse_args_for_week_in_tasks(
-    args: Vec<String>,
-) -> Result<(NaiveDate, NaiveDate), String> {
+fn parse_args_for_week_in_tasks(args: Vec<String>) -> Result<(NaiveDate, NaiveDate), String> {
     if args.len() > 1 {
         return Err("Too many args found for week-in-tasks".to_owned());
     }
@@ -51,11 +45,9 @@ pub fn daily_tasks(args: Vec<String>) {
     let config: Config = get_config();
     let show_times_in_hours: bool = config.show_times_in_hours_or_default();
     match parse_args_for_daily_tasks(args) {
-        Ok((start_date, end_date)) => print_daily_task_summary_for_date_range(
-            start_date,
-            end_date,
-            show_times_in_hours,
-        ),
+        Ok((start_date, end_date)) => {
+            print_daily_task_summary_for_date_range(start_date, end_date, show_times_in_hours)
+        }
         Err(msg) => {
             eprintln!("{}", msg);
             exit(1);
@@ -63,9 +55,7 @@ pub fn daily_tasks(args: Vec<String>) {
     }
 }
 
-fn parse_args_for_daily_tasks(
-    args: Vec<String>,
-) -> Result<(NaiveDate, NaiveDate), String> {
+fn parse_args_for_daily_tasks(args: Vec<String>) -> Result<(NaiveDate, NaiveDate), String> {
     if args.len() == 0 {
         return Err("daily-tasks must have at least one argument.".to_string());
     }
@@ -132,17 +122,23 @@ pub fn print_daily_task_summary_for_date_range(
         let task_summaries = this_day.get_task_times_secs_and_num_blocks();
         for task_name in this_day.get_tasks_in_chronological_order() {
             let (time, blocks) = task_summaries.get(&task_name).unwrap();
-            let date_col = if first_for_date {this_date_str.clone()} else {"".to_owned()};
-            table.add_row(row![&date_col, &task_name, render_seconds_human_readable(*time, show_times_in_hours), &blocks]);
+            let date_col = if first_for_date {
+                this_date_str.clone()
+            } else {
+                "".to_owned()
+            };
+            table.add_row(row![
+                &date_col,
+                &task_name,
+                render_seconds_human_readable(*time, show_times_in_hours),
+                &blocks
+            ]);
             first_for_date = false;
         }
 
         days_done.push(this_date_str.clone());
     }
-    println!(
-        "Days included: {}",
-        render_list_for_user(&days_done, None)
-    );
+    println!("Days included: {}", render_list_for_user(&days_done, None));
     if days_not_there.len() > 0 {
         println!(
             "Days not there: {}",
