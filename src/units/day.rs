@@ -289,6 +289,38 @@ impl Day {
         };
     }
 
+    pub fn estimate_finish_time_for_time_to_do(&self) -> Option<Dt> {
+        // This method assumes that the day is finished, producing None if it is not.
+        let time_left_opt: Option<i64> = self.get_time_left_secs();
+        let day_end_opt: Option<Dt> = self.get_day_end();
+        let time_to_do_secs: u64 = self.get_time_to_do_secs();
+
+        match (time_left_opt, day_end_opt) {
+            (Some(time_left), Some(day_end)) => {
+                if time_left >= 0 {
+                    return Some(Dt(day_end.as_dt() + Duration::seconds(time_left)));
+                } else {
+                    let mut seconds_accumulated: i64 = 0;
+                    let break_indices: HashSet<&usize> = HashSet::from_iter(self.breaks.iter());
+                    for (i, block) in self.timeblocks.iter().enumerate() {
+                        let block_length: i64 = block.get_length_secs().expect("Day has ended so all blocks should be finished.");
+                        if !break_indices.contains(&i) {
+                            seconds_accumulated += block_length;
+                        }
+
+                        let time_to_do_at_block_end: i64 = time_to_do_secs as i64 - seconds_accumulated as i64;
+                        if time_to_do_at_block_end < 0 {
+                            let block_end: Dt = block.get_end().expect("Day has ended so all blocks should be finished."); 
+                            return Some(Dt(block_end.as_dt() + Duration::seconds(time_to_do_at_block_end)));
+                        }
+                    }
+                    return None;
+                }
+            },
+            (_, _) => return None,
+        };
+    }
+
     pub fn add_note(&mut self, time: &DateTime<Local>, msg: &String) {
         self.timeblocks
             .last_mut()
@@ -389,21 +421,37 @@ impl Day {
             );
         }
         summary_str += "\n";
-
+        
+        let time_to_do_sec: i64 = self.get_time_to_do_secs() as i64;
         summary_str += &format!(
             "\nTime to do today: {}",
-            render_seconds_human_readable(self.get_time_to_do_secs() as i64, show_times_in_hours)
+            render_seconds_human_readable(time_to_do_sec, show_times_in_hours)
         );
         summary_str += &format!(
             "\nTime left to do today: {}",
             render_seconds_human_readable(time_left, show_times_in_hours)
-        );
+        );       
+        let time_done: Dt = self.estimate_finish_time_for_time_to_do().expect("Day is done so we should be able to get a day end estimate!");
+        if time_left > 0 {
+            summary_str += &format!(
+                "\n\tYou will finish your time to do of {} at {}.", 
+                render_seconds_human_readable(self.get_time_to_do_secs() as i64, show_times_in_hours), 
+                time_done.0.format("%d/%m/%Y %H:%M:%S"));
+        }
+        else {
+            summary_str += &format!("\n\tYou could have finished at {}", time_done.0.format("%d/%m/%Y %H:%M"));
+        }
+
         if let Some(initial_time_behind) = initial_time_behind_opt {
             let total_time_behind: i64 = initial_time_behind + time_left;
             summary_str += &format!(
                 "\nTime behind overall: {}",
                 render_seconds_human_readable(total_time_behind, show_times_in_hours)
             );
+            if initial_time_behind + time_to_do_sec < 0 {
+                summary_str += &format!("\n\tYou started the day ahead on time!")
+
+            } else if {}
         }
         return Ok(summary_str);
     }
