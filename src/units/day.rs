@@ -285,7 +285,12 @@ impl Day {
     }
 
     pub fn find_time_when_amount_of_time_was_done(&self, seconds_to_do: i64) -> Option<Dt> {
-        // This method assumes that the day is finished, producing None if it is not.
+        // This method estimates at what point during or after the day that seconds to do was done.
+        //
+        // If seconds to do is negative, it returns the start of the day.
+        // If it happens after the end of the day, we calculated the time by adding to the end time.
+        // Otherwise, we find the block in the day that finished it and finding the point in that block where it happens.
+        // If the day hasn't ended yet, we return None.
         let time_done_opt: Option<i64> = self.get_time_done_secs();
         let day_end_opt: Option<Dt> = self.get_day_end();
 
