@@ -5,7 +5,7 @@ use std::fs::{copy, create_dir_all, read_to_string, remove_file, File, OpenOptio
 use std::io::Write;
 use std::path::Path;
 
-pub const DEFAULT_BASE_DIR: &str = "~/.punch-card/";
+pub const DEFAULT_BASE_DIR: &str = ".punch-card/";
 
 pub fn write_file(path: &str, contents: String) {
     let path_str_to_write: String = expand_path(path);
@@ -40,10 +40,12 @@ pub fn create_dir_if_not_exists(path: &str) {
 
 pub fn get_base_dir() -> String {
     if let Ok(punch_home) = var("PUNCH_CARD_HOME") {
-        return punch_home;
-    } else {
-        return DEFAULT_BASE_DIR.to_owned();
+        let punch_home_clean: String = punch_home.trim().to_owned();
+        if !punch_home_clean.is_empty() {
+            return punch_home;
+        }
     }
+    return ("~/".to_owned() + DEFAULT_BASE_DIR).to_owned();
 }
 
 pub fn create_base_dir_if_not_exists() {
@@ -60,7 +62,7 @@ pub fn expand_path(path: &str) -> String {
             (Ok(home_dir), _) => home_dir,
             (_, _) => panic!("You are using an unsupported OS!"),
         };
-        return home_path;
+        return home_path + &path[1..];
     } else {
         return path.to_string();
     };
@@ -114,18 +116,18 @@ pub trait SafeFileEdit<T: FromString<T, E> + ToFile, E>: ToFile + FromString<T, 
     fn safe_edit_from_file(&self) {
         let std_path: String = self.get_path();
         let temp_path: String = (&std_path).to_string() + "-temp";
-        copy(&std_path, &temp_path);
+        copy(&std_path, &temp_path).expect("Copy of file failed!");
         edit_file(&temp_path);
 
         let yaml_str: String = read_file(&temp_path).unwrap();
         let new_result: Result<T, E> = T::try_from_string(&yaml_str);
         match new_result {
             Ok(new_value) => {
-                remove_file(&std_path);
+                remove_file(&std_path).expect("Copy of file failed!");
                 new_value.write();
             }
             Err(_) => println!("Invalid Config created. Please try again"),
         };
-        remove_file(temp_path);
+        remove_file(temp_path).expect("Copy of file failed!");
     }
 }
