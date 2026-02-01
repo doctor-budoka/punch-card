@@ -1,5 +1,5 @@
 use crate::utils::file_io::{
-    expand_path, read_file, write_file, FromString, SafeFileEdit, ToFile, BASE_DIR,
+    expand_path, get_base_dir, read_file, write_file, FromString, SafeFileEdit, ToFile,
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -124,7 +124,7 @@ pub fn read_config(path: &String) -> Config {
 }
 
 pub fn create_default_config_if_not_exists() {
-    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    let config_path: String = expand_path(&(get_base_dir() + &(CONFIG_FILE.to_owned())));
     if !Path::new(&config_path).exists() {
         let default_config: Config = Config::new(
             DEFAULT_TIME_MINS,
@@ -145,10 +145,10 @@ pub fn get_config() -> Config {
 }
 
 pub fn get_config_path() -> String {
-    return expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    return expand_path(&(get_base_dir() + &(CONFIG_FILE.to_owned())));
 }
 
 pub fn update_config(config: Config) {
-    let config_path: String = expand_path(&(BASE_DIR.to_owned() + &(CONFIG_FILE.to_owned())));
+    let config_path: String = expand_path(&(get_base_dir() + &(CONFIG_FILE.to_owned())));
     write_config(&config_path, &config)
 }
