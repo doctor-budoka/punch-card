@@ -64,7 +64,7 @@ pub fn expand_path(path: &str) -> String {
         };
         return home_path + &path[1..];
     } else {
-        return path.to_string();
+        return path.to_owned();
     };
 }
 
