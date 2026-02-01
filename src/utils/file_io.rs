@@ -116,18 +116,21 @@ pub trait SafeFileEdit<T: FromString<T, E> + ToFile, E>: ToFile + FromString<T, 
     fn safe_edit_from_file(&self) {
         let std_path: String = self.get_path();
         let temp_path: String = (&std_path).to_string() + "-temp";
-        copy(&std_path, &temp_path).expect("Copy of file failed!");
+        copy(&std_path, &temp_path).expect(&format!(
+            "Copy of file {} to {} failed!",
+            &std_path, &temp_path
+        ));
         edit_file(&temp_path);
 
         let yaml_str: String = read_file(&temp_path).unwrap();
         let new_result: Result<T, E> = T::try_from_string(&yaml_str);
         match new_result {
             Ok(new_value) => {
-                remove_file(&std_path).expect("Copy of file failed!");
+                remove_file(&std_path).expect(&format!("Failed to delete file {}!", &std_path));
                 new_value.write();
             }
             Err(_) => println!("Invalid Config created. Please try again"),
         };
-        remove_file(temp_path).expect("Copy of file failed!");
+        remove_file(temp_path).expect(&format!("Failed to delete file {}!", &std_path));
     }
 }
