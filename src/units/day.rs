@@ -8,8 +8,8 @@ use crate::units::interval::{Dt, Interval, DATETIME_FMT, DATE_FMT};
 use crate::user_interaction::human_readable::render_seconds_human_readable;
 
 use crate::utils::file_io::{
-    create_dir_if_not_exists, expand_path, read_file, write_file, FromString, SafeFileEdit, ToFile,
-    BASE_DIR,
+    create_dir_if_not_exists, expand_path, get_base_dir, read_file, write_file, FromString,
+    SafeFileEdit, ToFile,
 };
 use crate::utils::work_summary::WorkSummary;
 
@@ -525,7 +525,7 @@ pub fn string_as_time(time_str: &String) -> DateTime<Local> {
 }
 
 pub fn get_day_file_path_from_date_str(date_str: &str) -> String {
-    return expand_path(BASE_DIR) + &(DAILY_DIR.to_string()) + date_str;
+    return expand_path(&get_base_dir()) + &(DAILY_DIR.to_string()) + date_str;
 }
 
 pub fn get_day_file_path(now: &DateTime<Local>) -> String {
@@ -564,6 +564,6 @@ pub fn get_current_day(now: &DateTime<Local>) -> Result<Day, String> {
 }
 
 pub fn create_daily_dir_if_not_exists() {
-    let daily_dir: String = BASE_DIR.to_string() + &(DAILY_DIR.to_string());
+    let daily_dir: String = get_base_dir() + &(DAILY_DIR.to_string());
     create_dir_if_not_exists(&daily_dir);
 }

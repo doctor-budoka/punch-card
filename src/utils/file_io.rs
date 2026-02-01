@@ -1,11 +1,11 @@
 use crate::utils::config::get_config;
 use std::env;
-use std::env::var;
-use std::fs::{create_dir_all, read_to_string, remove_file, File, OpenOptions};
+use std::env::{home_dir, var};
+use std::fs::{copy, create_dir_all, read_to_string, remove_file, File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 
-pub const BASE_DIR: &str = "~/.punch-card/";
+pub const DEFAULT_BASE_DIR: &str = ".punch-card/";
 
 pub fn write_file(path: &str, contents: String) {
     let path_str_to_write: String = expand_path(path);
@@ -38,15 +38,33 @@ pub fn create_dir_if_not_exists(path: &str) {
     }
 }
 
+pub fn get_base_dir() -> String {
+    if let Ok(punch_home) = var("PUNCH_CARD_HOME") {
+        let punch_home_clean: String = punch_home.trim().to_owned();
+        if !punch_home_clean.is_empty() {
+            return punch_home;
+        }
+    }
+    return ("~/".to_owned() + DEFAULT_BASE_DIR).to_owned();
+}
+
 pub fn create_base_dir_if_not_exists() {
-    create_dir_if_not_exists(&BASE_DIR)
+    create_dir_if_not_exists(&get_base_dir())
 }
 
 pub fn expand_path(path: &str) -> String {
-    return if path.starts_with("~/") {
-        var("HOME").unwrap() + &path[1..]
+    if path.starts_with("~/") {
+        let home_path: String = match (var("HOME"), home_dir()) {
+            (_, Some(home_dir_path)) => home_dir_path
+                .to_str()
+                .expect("Provided path is not valid (possibly has non-UTF-8 characters")
+                .to_owned(),
+            (Ok(home_dir), _) => home_dir,
+            (_, _) => panic!("You are using an unsupported OS!"),
+        };
+        return home_path + &path[1..];
     } else {
-        path.to_string()
+        return path.to_owned();
     };
 }
 
@@ -98,27 +116,21 @@ pub trait SafeFileEdit<T: FromString<T, E> + ToFile, E>: ToFile + FromString<T, 
     fn safe_edit_from_file(&self) {
         let std_path: String = self.get_path();
         let temp_path: String = (&std_path).to_string() + "-temp";
-        std::process::Command::new("cp")
-            .args([&std_path, &temp_path])
-            .output()
-            .expect("Failed to create temporary data!");
-
+        copy(&std_path, &temp_path).expect(&format!(
+            "Copy of file {} to {} failed!",
+            &std_path, &temp_path
+        ));
         edit_file(&temp_path);
+
         let yaml_str: String = read_file(&temp_path).unwrap();
         let new_result: Result<T, E> = T::try_from_string(&yaml_str);
         match new_result {
             Ok(new_value) => {
-                std::process::Command::new("rm")
-                    .arg(&std_path)
-                    .output()
-                    .expect("Failed to clean up the temporary data!");
+                remove_file(&std_path).expect(&format!("Failed to delete file {}!", &std_path));
                 new_value.write();
             }
             Err(_) => println!("Invalid Config created. Please try again"),
         };
-        std::process::Command::new("rm")
-            .arg(&temp_path)
-            .output()
-            .expect("Failed to clean up the temporary data!");
+        remove_file(temp_path).expect(&format!("Failed to delete file {}!", &std_path));
     }
 }
