@@ -52,6 +52,7 @@ impl Day {
             return Err("Can't end the day because the day has already ended!");
         }
         self.overall_interval.end_at(at);
+        self.end_current_block_at(at);
         if time_to_do_done {
             let total_time_done: u64 = self.get_time_done_secs().unwrap() as u64;
             let minutes_done: u64 = total_time_done / 60;
@@ -59,24 +60,19 @@ impl Day {
             self.time_to_do = minutes_done;
             self.time_to_do_seconds_in_addition = Some(seconds_in_addition_done);
         }
-        let block_result: Result<(), &str> = self.end_current_block_at(at);
-        match block_result {
-            Ok(_) => return Ok(()),
-            Err(msg) => return Err(msg),
-        };
+        return Ok(());
     }
 
     pub fn has_ended(&self) -> bool {
         return self.overall_interval.has_end();
     }
 
-    pub fn end_current_block_at(&mut self, at: &DateTime<Local>) -> Result<(), &str> {
+    pub fn end_current_block_at(&mut self, at: &DateTime<Local>) {
         self.timeblocks
             .last_mut()
             .expect("Expected there to be an ongoing block!")
             .end_at(at);
         self.on_break = false;
-        return Ok(());
     }
 
     pub fn get_latest_task_name(&self) -> String {
@@ -119,8 +115,7 @@ impl Day {
         if self.has_ended() {
             return Err("Can't start a new block because day is already over!");
         }
-        self.end_current_block_at(at)
-            .expect("There should have been an existing block!");
+        self.end_current_block_at(at);
         let new_block: TimeBlock = TimeBlock::new(task_name.clone(), at);
         let new_ind: usize = self.timeblocks.len();
         self.timeblocks.push(new_block);
